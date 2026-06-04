@@ -61,6 +61,18 @@
       {
         "name": "lingyang",
         "charges": "1"
+      },
+      {
+        "name": "luuk herssen",
+        "charges": "1"
+      },
+      {
+        "name": "phoebe",
+        "charges": "1"
+      },
+      {
+        "name": "phrolova",
+        "charges": "1"
       }
     ],
     "zone-sub": [
@@ -93,7 +105,23 @@
         "charges": "1"
       },
       {
-        "name": "lucilla",
+        "name": "lumi",
+        "charges": "1"
+      },
+      {
+        "name": "lynae",
+        "charges": "1"
+      },
+      {
+        "name": "mortefi",
+        "charges": "1"
+      },
+      {
+        "name": "qiuyuan",
+        "charges": "1"
+      },
+      {
+        "name": "roccia",
         "charges": "1"
       }
     ],
@@ -109,61 +137,21 @@
       {
         "name": "chisa",
         "charges": "1"
-      }
-    ],
-    "zone-unsorted": [
-      {
-        "name": "lucy",
-        "charges": "1"
-      },
-      {
-        "name": "lumi",
-        "charges": "1"
       },
       {
         "name": "lupa",
         "charges": "1"
       },
       {
-        "name": "luuk herssen",
-        "charges": "1"
-      },
-      {
-        "name": "lynae",
-        "charges": "1"
-      },
-      {
         "name": "mornye",
-        "charges": "1"
-      },
-      {
-        "name": "mortefi",
-        "charges": "1"
-      },
-      {
-        "name": "phoebe",
-        "charges": "1"
-      },
-      {
-        "name": "phrolova",
-        "charges": "1"
-      },
-      {
-        "name": "qiuyuan",
-        "charges": "1"
-      },
-      {
-        "name": "rebecca",
-        "charges": "1"
-      },
-      {
-        "name": "roccia",
-        "charges": "1"
+        "charges": "2"
       },
       {
         "name": "rover(female)",
         "charges": "1"
-      },
+      }
+    ],
+    "zone-unsorted": [
       {
         "name": "rover(male)",
         "charges": "1"
@@ -220,6 +208,6 @@
   },
   "hideNames": false,
   "snapToGrid": false,
-  "roverGender": "male",
+  "roverGender": "female",
   "layoutMode": "freeform"
 }

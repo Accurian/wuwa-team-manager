@@ -125,16 +125,6 @@
         "file":  "Character_Icons/Lingyang.png"
     },
     {
-        "key":  "lucilla",
-        "displayName":  "Lucilla",
-        "file":  "Character_Icons/Lucilla.png"
-    },
-    {
-        "key":  "lucy",
-        "displayName":  "Lucy",
-        "file":  "Character_Icons/Lucy.png"
-    },
-    {
         "key":  "lumi",
         "displayName":  "Lumi",
         "file":  "Character_Icons/Lumi.png"
@@ -178,11 +168,6 @@
         "key":  "qiuyuan",
         "displayName":  "Qiuyuan",
         "file":  "Character_Icons/Qiuyuan.png"
-    },
-    {
-        "key":  "rebecca",
-        "displayName":  "Rebecca",
-        "file":  "Character_Icons/Rebecca.png"
     },
     {
         "key":  "roccia",
