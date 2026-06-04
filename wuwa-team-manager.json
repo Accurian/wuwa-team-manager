@@ -1,33 +1,168 @@
 {
-  "teams": [],
+  "teams": [
+    {
+      "name": "Fusion Burst",
+      "x": "",
+      "y": "",
+      "locked": false,
+      "element": "fusion",
+      "element2": "",
+      "units": [
+        {
+          "name": "aemeath",
+          "charges": "1"
+        },
+        {
+          "name": "denia",
+          "charges": "1"
+        },
+        {
+          "name": "chisa",
+          "charges": "1"
+        }
+      ]
+    },
+    {
+      "name": "Mono Fusion",
+      "x": "",
+      "y": "",
+      "locked": false,
+      "element": "fusion",
+      "element2": "",
+      "units": [
+        {
+          "name": "changli",
+          "charges": "1"
+        },
+        {
+          "name": "brant",
+          "charges": "1"
+        },
+        {
+          "name": "lupa",
+          "charges": "1"
+        }
+      ]
+    },
+    {
+      "name": "Glacio Chafe",
+      "x": "",
+      "y": "",
+      "locked": false,
+      "element": "glacio",
+      "element2": "",
+      "units": [
+        {
+          "name": "hiyuki",
+          "charges": "1"
+        },
+        {
+          "name": "lynae",
+          "charges": "1"
+        },
+        {
+          "name": "mornye",
+          "charges": "1"
+        }
+      ]
+    },
+    {
+      "name": "",
+      "x": "",
+      "y": "",
+      "locked": false,
+      "element": "aero",
+      "element2": "",
+      "units": [
+        {
+          "name": "cartethyia",
+          "charges": "1"
+        },
+        {
+          "name": "ciaccona",
+          "charges": "1"
+        },
+        {
+          "name": "rover(female)",
+          "charges": "1"
+        }
+      ]
+    },
+    {
+      "name": "",
+      "x": "",
+      "y": "",
+      "locked": false,
+      "element": "havoc",
+      "element2": "",
+      "units": [
+        {
+          "name": "camellya",
+          "charges": "1"
+        },
+        {
+          "name": "sanhua",
+          "charges": "1"
+        },
+        {
+          "name": "shorekeeper",
+          "charges": "1"
+        }
+      ]
+    },
+    {
+      "name": "",
+      "x": "",
+      "y": "",
+      "locked": false,
+      "element": "spectro",
+      "element2": "",
+      "units": [
+        {
+          "name": "jinhsi",
+          "charges": "1"
+        },
+        {
+          "name": "yinlin",
+          "charges": "1"
+        },
+        {
+          "name": "shorekeeper",
+          "charges": "1"
+        }
+      ]
+    },
+    {
+      "name": "Quickswap",
+      "x": "",
+      "y": "",
+      "locked": false,
+      "element": "electro",
+      "element2": "",
+      "units": [
+        {
+          "name": "calcharo",
+          "charges": "1"
+        },
+        {
+          "name": "xiangli yao",
+          "charges": "1"
+        },
+        {
+          "name": "verina",
+          "charges": "1"
+        }
+      ]
+    }
+  ],
   "roster": {
     "zone-main": [
-      {
-        "name": "aemeath",
-        "charges": "1"
-      },
       {
         "name": "augusta",
         "charges": "1"
       },
       {
-        "name": "calcharo",
-        "charges": "1"
-      },
-      {
-        "name": "camellya",
-        "charges": "1"
-      },
-      {
         "name": "carlotta",
-        "charges": "1"
-      },
-      {
-        "name": "cartethyia",
-        "charges": "1"
-      },
-      {
-        "name": "changli",
         "charges": "1"
       },
       {
@@ -44,14 +179,6 @@
       },
       {
         "name": "galbrena",
-        "charges": "1"
-      },
-      {
-        "name": "hiyuki",
-        "charges": "1"
-      },
-      {
-        "name": "jinhsi",
         "charges": "1"
       },
       {
@@ -73,6 +200,14 @@
       {
         "name": "phrolova",
         "charges": "1"
+      },
+      {
+        "name": "sigrika",
+        "charges": "1"
+      },
+      {
+        "name": "zani",
+        "charges": "1"
       }
     ],
     "zone-sub": [
@@ -81,19 +216,7 @@
         "charges": "1"
       },
       {
-        "name": "brant",
-        "charges": "1"
-      },
-      {
         "name": "cantarella",
-        "charges": "1"
-      },
-      {
-        "name": "ciaccona",
-        "charges": "1"
-      },
-      {
-        "name": "denia",
         "charges": "1"
       },
       {
@@ -109,10 +232,6 @@
         "charges": "1"
       },
       {
-        "name": "lynae",
-        "charges": "1"
-      },
-      {
         "name": "mortefi",
         "charges": "1"
       },
@@ -122,6 +241,22 @@
       },
       {
         "name": "roccia",
+        "charges": "1"
+      },
+      {
+        "name": "taoqi",
+        "charges": "1"
+      },
+      {
+        "name": "yangyang",
+        "charges": "1"
+      },
+      {
+        "name": "yuanwu",
+        "charges": "1"
+      },
+      {
+        "name": "zhezhi",
         "charges": "1"
       }
     ],
@@ -135,79 +270,41 @@
         "charges": "2"
       },
       {
-        "name": "chisa",
-        "charges": "1"
-      },
-      {
-        "name": "lupa",
-        "charges": "1"
-      },
-      {
-        "name": "mornye",
+        "name": "youhu",
         "charges": "2"
-      },
-      {
-        "name": "rover(female)",
-        "charges": "1"
       }
     ],
     "zone-unsorted": [
       {
         "name": "rover(male)",
         "charges": "1"
-      },
-      {
-        "name": "sanhua",
-        "charges": "1"
-      },
-      {
-        "name": "shorekeeper",
-        "charges": "1"
-      },
-      {
-        "name": "sigrika",
-        "charges": "1"
-      },
-      {
-        "name": "taoqi",
-        "charges": "1"
-      },
-      {
-        "name": "verina",
-        "charges": "1"
-      },
-      {
-        "name": "xiangli yao",
-        "charges": "1"
-      },
-      {
-        "name": "yangyang",
-        "charges": "1"
-      },
-      {
-        "name": "yinlin",
-        "charges": "1"
-      },
-      {
-        "name": "youhu",
-        "charges": "1"
-      },
-      {
-        "name": "yuanwu",
-        "charges": "1"
-      },
-      {
-        "name": "zani",
-        "charges": "1"
-      },
-      {
-        "name": "zhezhi",
-        "charges": "1"
       }
     ]
   },
-  "hideNames": false,
+  "rows": [
+    {
+      "element": "fusion"
+    },
+    {
+      "element": "glacio"
+    },
+    {
+      "element": "aero"
+    },
+    {
+      "element": "havoc"
+    },
+    {
+      "element": "spectro"
+    },
+    {
+      "element": "electro"
+    }
+  ],
+  "hideNames": true,
   "snapToGrid": false,
   "roverGender": "female",
-  "layoutMode": "freeform"
+  "layoutMode": "rows",
+  "rowDirection": "vertical",
+  "rowAlign": "center"
 }
