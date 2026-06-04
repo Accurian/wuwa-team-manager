@@ -122,6 +122,18 @@ document.addEventListener('mousemove', (e) => {
 });
 document.addEventListener('mouseup', () => { if (isResizing) { isResizing = false; document.body.style.cursor = 'default'; } });
 
+// --- Load Bundled Characters from Manifest ---
+fetch('characters.json').then(r => r.json()).then(list => {
+    const unsortedZone = document.getElementById('zone-unsorted');
+    list.forEach(c => {
+        if (!imageCache[c.key]) {
+            imageCache[c.key] = { url: c.file, displayName: c.displayName };
+        }
+    });
+    loadImagesToUnsorted(unsortedZone);
+    isDirty = false;
+}).catch(() => {});
+
 // --- Icon Loader ---
 document.getElementById('icons-input').addEventListener('change', (e) => {
     const files = e.target.files;

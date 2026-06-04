@@ -1,0 +1,247 @@
+[
+    {
+        "key":  "aalto",
+        "displayName":  "Aalto",
+        "file":  "Resources/Aalto.png"
+    },
+    {
+        "key":  "aemeath",
+        "displayName":  "Aemeath",
+        "file":  "Resources/Aemeath.png"
+    },
+    {
+        "key":  "augusta",
+        "displayName":  "Augusta",
+        "file":  "Resources/Augusta.png"
+    },
+    {
+        "key":  "baizhi",
+        "displayName":  "Baizhi",
+        "file":  "Resources/Baizhi.png"
+    },
+    {
+        "key":  "brant",
+        "displayName":  "Brant",
+        "file":  "Resources/Brant.png"
+    },
+    {
+        "key":  "buling",
+        "displayName":  "Buling",
+        "file":  "Resources/Buling.png"
+    },
+    {
+        "key":  "calcharo",
+        "displayName":  "Calcharo",
+        "file":  "Resources/Calcharo.png"
+    },
+    {
+        "key":  "camellya",
+        "displayName":  "Camellya",
+        "file":  "Resources/Camellya.png"
+    },
+    {
+        "key":  "cantarella",
+        "displayName":  "Cantarella",
+        "file":  "Resources/Cantarella.png"
+    },
+    {
+        "key":  "carlotta",
+        "displayName":  "Carlotta",
+        "file":  "Resources/Carlotta.png"
+    },
+    {
+        "key":  "cartethyia",
+        "displayName":  "Cartethyia",
+        "file":  "Resources/Cartethyia.png"
+    },
+    {
+        "key":  "changli",
+        "displayName":  "Changli",
+        "file":  "Resources/Changli.png"
+    },
+    {
+        "key":  "chisa",
+        "displayName":  "Chisa",
+        "file":  "Resources/Chisa.png"
+    },
+    {
+        "key":  "chixia",
+        "displayName":  "Chixia",
+        "file":  "Resources/Chixia.png"
+    },
+    {
+        "key":  "ciaccona",
+        "displayName":  "Ciaccona",
+        "file":  "Resources/Ciaccona.png"
+    },
+    {
+        "key":  "danjin",
+        "displayName":  "Danjin",
+        "file":  "Resources/Danjin.png"
+    },
+    {
+        "key":  "denia",
+        "displayName":  "Denia",
+        "file":  "Resources/Denia.png"
+    },
+    {
+        "key":  "encore",
+        "displayName":  "Encore",
+        "file":  "Resources/Encore.png"
+    },
+    {
+        "key":  "galbrena",
+        "displayName":  "Galbrena",
+        "file":  "Resources/Galbrena.png"
+    },
+    {
+        "key":  "hiyuki",
+        "displayName":  "Hiyuki",
+        "file":  "Resources/Hiyuki.png"
+    },
+    {
+        "key":  "iuno",
+        "displayName":  "Iuno",
+        "file":  "Resources/Iuno.png"
+    },
+    {
+        "key":  "jianxin",
+        "displayName":  "Jianxin",
+        "file":  "Resources/Jianxin.png"
+    },
+    {
+        "key":  "jinhsi",
+        "displayName":  "Jinhsi",
+        "file":  "Resources/Jinhsi.png"
+    },
+    {
+        "key":  "jiyan",
+        "displayName":  "Jiyan",
+        "file":  "Resources/Jiyan.png"
+    },
+    {
+        "key":  "lingyang",
+        "displayName":  "Lingyang",
+        "file":  "Resources/Lingyang.png"
+    },
+    {
+        "key":  "lumi",
+        "displayName":  "Lumi",
+        "file":  "Resources/Lumi.png"
+    },
+    {
+        "key":  "lupa",
+        "displayName":  "Lupa",
+        "file":  "Resources/Lupa.png"
+    },
+    {
+        "key":  "luuk herssen",
+        "displayName":  "Luuk Herssen",
+        "file":  "Resources/Luuk Herssen.png"
+    },
+    {
+        "key":  "lynae",
+        "displayName":  "Lynae",
+        "file":  "Resources/Lynae.png"
+    },
+    {
+        "key":  "mornye",
+        "displayName":  "Mornye",
+        "file":  "Resources/Mornye.png"
+    },
+    {
+        "key":  "mortefi",
+        "displayName":  "Mortefi",
+        "file":  "Resources/Mortefi.png"
+    },
+    {
+        "key":  "phoebe",
+        "displayName":  "Phoebe",
+        "file":  "Resources/Phoebe.png"
+    },
+    {
+        "key":  "phrolova",
+        "displayName":  "Phrolova",
+        "file":  "Resources/Phrolova.png"
+    },
+    {
+        "key":  "qiuyuan",
+        "displayName":  "Qiuyuan",
+        "file":  "Resources/Qiuyuan.png"
+    },
+    {
+        "key":  "roccia",
+        "displayName":  "Roccia",
+        "file":  "Resources/Roccia.png"
+    },
+    {
+        "key":  "rover(female)",
+        "displayName":  "Rover(Female)",
+        "file":  "Resources/Rover(Female).png"
+    },
+    {
+        "key":  "rover(male)",
+        "displayName":  "Rover(Male)",
+        "file":  "Resources/Rover(Male).png"
+    },
+    {
+        "key":  "sanhua",
+        "displayName":  "Sanhua",
+        "file":  "Resources/Sanhua.png"
+    },
+    {
+        "key":  "shorekeeper",
+        "displayName":  "Shorekeeper",
+        "file":  "Resources/Shorekeeper.png"
+    },
+    {
+        "key":  "sigrika",
+        "displayName":  "Sigrika",
+        "file":  "Resources/Sigrika.png"
+    },
+    {
+        "key":  "taoqi",
+        "displayName":  "Taoqi",
+        "file":  "Resources/Taoqi.png"
+    },
+    {
+        "key":  "verina",
+        "displayName":  "Verina",
+        "file":  "Resources/Verina.png"
+    },
+    {
+        "key":  "xiangli yao",
+        "displayName":  "Xiangli Yao",
+        "file":  "Resources/Xiangli Yao.png"
+    },
+    {
+        "key":  "yangyang",
+        "displayName":  "Yangyang",
+        "file":  "Resources/Yangyang.png"
+    },
+    {
+        "key":  "yinlin",
+        "displayName":  "Yinlin",
+        "file":  "Resources/Yinlin.png"
+    },
+    {
+        "key":  "youhu",
+        "displayName":  "Youhu",
+        "file":  "Resources/Youhu.png"
+    },
+    {
+        "key":  "yuanwu",
+        "displayName":  "Yuanwu",
+        "file":  "Resources/Yuanwu.png"
+    },
+    {
+        "key":  "zani",
+        "displayName":  "Zani",
+        "file":  "Resources/Zani.png"
+    },
+    {
+        "key":  "zhezhi",
+        "displayName":  "Zhezhi",
+        "file":  "Resources/Zhezhi.png"
+    }
+]
