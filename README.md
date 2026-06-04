@@ -1,6 +1,6 @@
 # Endstate Matrix — Wuthering Waves Team Manager
 
-A team building manager for Wuthering Waves.  
+A team building manager for Wuthering Waves, mainly created for Endstate Matrix but can be used for general use.
 https://wuwa-team-manager.vercel.app/
 
 ## How to use
