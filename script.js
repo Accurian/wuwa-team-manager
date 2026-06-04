@@ -460,7 +460,7 @@ function getPlaneCoords(clientX, clientY) {
 // --- Drag, Drop, & Click Logic ---
 let draggingEl = null, originalParent = null, dragType = null;
 let dragOffsetX = 0, dragOffsetY = 0;
-let isDragMoved = false;
+let isDragMoved = false, originalRow = null;
 
 document.addEventListener('mousedown', (e) => {
     if (e.button !== 0 || isPanning) return;
@@ -473,8 +473,6 @@ document.addEventListener('mousedown', (e) => {
     }
 
     if (unitTarget) teamTarget = null;
-    // In rows mode, teams are not draggable
-    if (layoutMode === 'rows') teamTarget = null;
     isDragMoved = false;
 
     if (unitTarget) {
@@ -494,6 +492,7 @@ document.addEventListener('mousedown', (e) => {
     else if (teamTarget) {
         draggingEl = teamTarget;
         dragType = 'team';
+        originalRow = layoutMode === 'rows' ? draggingEl.closest('.row') : null;
         const rect = draggingEl.getBoundingClientRect();
         dragOffsetX = (e.clientX - rect.left) / zoomLevel;
         dragOffsetY = (e.clientY - rect.top) / zoomLevel;
@@ -507,6 +506,7 @@ document.addEventListener('mousemove', (e) => {
     if (dragType === 'unit') {
         updateUnitDragPos(e.clientX, e.clientY);
     } else if (dragType === 'team') {
+        if (layoutMode === 'rows') return;
         draggingEl.classList.add('dragging-team');
         let coords = getPlaneCoords(e.clientX, e.clientY);
 
@@ -543,11 +543,13 @@ document.addEventListener('mouseup', (e) => {
             markDirty();
         }
         else if (dragType === 'team') {
-            let edgeDist = 20;
-            let teamW = draggingEl.offsetWidth;
-            let teamH = draggingEl.offsetHeight;
-            if (dragOffsetX > (teamW - edgeDist) || dragOffsetY > (teamH - edgeDist)) {
-                toggleTeamLock(draggingEl);
+            if (layoutMode !== 'rows') {
+                let edgeDist = 20;
+                let teamW = draggingEl.offsetWidth;
+                let teamH = draggingEl.offsetHeight;
+                if (dragOffsetX > (teamW - edgeDist) || dragOffsetY > (teamH - edgeDist)) {
+                    toggleTeamLock(draggingEl);
+                }
             }
         }
         else if (dragType === 'unit') {
@@ -603,7 +605,8 @@ document.addEventListener('mouseup', (e) => {
             markDirty();
         }
         else if (isOverWorkspace && !targetTeam) {
-            createNewTeam(unitToPlace, e.clientX, e.clientY);
+            let targetRow = (layoutMode === 'rows' && elemBelow) ? elemBelow.closest('.row') : null;
+            createNewTeam(unitToPlace, e.clientX, e.clientY, false, targetRow);
             markDirty();
         }
         else {
@@ -616,6 +619,16 @@ document.addEventListener('mouseup', (e) => {
         if (originalParent && originalParent.classList.contains('team') && originalParent.querySelectorAll('div.unit').length === 0) {
             originalParent.remove();
         }
+    } else if (dragType === 'team' && layoutMode === 'rows') {
+        draggingEl.style.display = 'none';
+        let below = document.elementFromPoint(e.clientX, e.clientY);
+        draggingEl.style.display = '';
+        let targetRow = below ? below.closest('.row') : null;
+        if (targetRow && targetRow !== originalRow) {
+            targetRow.querySelector('.row-body').appendChild(draggingEl);
+            resetInlinePositions(draggingEl);
+        }
+        markDirty();
     } else {
         markDirty();
         enforceAntiVoid();
@@ -623,7 +636,7 @@ document.addEventListener('mouseup', (e) => {
     draggingEl = null; dragType = null;
 });
 
-function createNewTeam(unitNode, clientX, clientY, bypassPositioning = false) {
+function createNewTeam(unitNode, clientX, clientY, bypassPositioning = false, targetRow = null) {
     let newTeam = document.createElement('div');
     newTeam.className = 'team';
 
@@ -695,8 +708,8 @@ function createNewTeam(unitNode, clientX, clientY, bypassPositioning = false) {
     }
 
     if (layoutMode === 'rows') {
-        let targetRow = ROWS_CONTAINER.querySelector('.row:not([data-element])') || ROWS_CONTAINER.firstElementChild;
-        targetRow.querySelector('.row-body').appendChild(newTeam);
+        let row = targetRow || ROWS_CONTAINER.querySelector('.row:not([data-element])') || ROWS_CONTAINER.firstElementChild;
+        row.querySelector('.row-body').appendChild(newTeam);
     } else {
         if (!bypassPositioning) {
             let coords = getPlaneCoords(clientX, clientY);
