@@ -592,7 +592,7 @@ document.getElementById('icons-input').addEventListener('change', async (e) => {
             let rawName = file.name.replace(/\.[^/.]+$/, "");
             let keyName = rawName.toLowerCase();
             if (!imageCache[keyName]) {
-                if (customCount >= MAX_CUSTOM_ICONS) {
+                if (currentUser && customCount >= MAX_CUSTOM_ICONS) {
                     errors.push(`Max 10 custom icons reached. Skipped: ${file.name}`);
                     continue;
                 }
