@@ -110,7 +110,7 @@ function showElementSelectorForRow(badge, row) {
         const opt = document.createElement('div');
         opt.className = 'element-option';
         opt.dataset.element = key;
-        opt.style.background = `url('Element_Icons/${key}.png') no-repeat center / contain, ${elem.color}`;
+        opt.style.background = `url('Element_Icons/${elem.name}.png') no-repeat center / contain, ${elem.color}`;
         opt.title = elem.name;
         opt.addEventListener('click', (e) => {
             e.stopPropagation();
@@ -140,7 +140,7 @@ function applyRowElement(row, elementKey) {
         row.classList.add('has-element');
         row.style.setProperty('--row-grad', `linear-gradient(to right, ${c} 50%, ${c} 50%)`);
         badge.style.backgroundColor = c;
-        badge.style.backgroundImage = `url('Element_Icons/${elementKey}.png')`;
+        badge.style.backgroundImage = `url('Element_Icons/${ELEMENTS[elementKey].name}.png')`;
         badge.classList.add('has-element');
         label.textContent = ELEMENTS[elementKey].name.toUpperCase();
         row.querySelectorAll('.row-body > .team').forEach(team => {
@@ -932,7 +932,7 @@ function showElementSelector(badge, team) {
         const opt = document.createElement('div');
         opt.className = 'element-option';
         opt.dataset.element = key;
-        opt.style.background = `url('Element_Icons/${key}.png') no-repeat center / contain, ${elem.color}`;
+        opt.style.background = `url('Element_Icons/${elem.name}.png') no-repeat center / contain, ${elem.color}`;
         opt.title = elem.name;
         opt.addEventListener('click', (e) => {
             e.stopPropagation();
@@ -976,7 +976,7 @@ function applyElement(team, elementKey, elementKey2) {
         team.style.setProperty('--elem-grad', `linear-gradient(to right, ${c1} 50%, ${c2} 50%)`);
         team.classList.add('has-element');
         badge.style.backgroundColor = c1;
-        badge.style.backgroundImage = `url('Element_Icons/${elementKey}.png')`;
+        badge.style.backgroundImage = `url('Element_Icons/${ELEMENTS[elementKey].name}.png')`;
         badge.classList.add('has-element');
     } else {
         badge.style.backgroundColor = '';
