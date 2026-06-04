@@ -3,6 +3,7 @@ let zoomLevel = 1;
 let panX = 0, panY = 0;
 let isDirty = false;
 let snapToGrid = false;
+let roverGender = 'male';
 let imageCache = {};
 let searchSpawnCounter = 0;
 
@@ -41,6 +42,20 @@ document.getElementById('show-names-toggle').addEventListener('change', (e) => {
     if (e.target.checked) document.body.classList.remove('hide-names');
     else document.body.classList.add('hide-names');
 });
+document.getElementById('rover-gender-select').addEventListener('change', (e) => {
+    roverGender = e.target.value;
+    applyRoverGender();
+    markDirty();
+});
+
+function applyRoverGender() {
+    const genderKey = roverGender === 'female' ? 'rover(female)' : 'rover(male)';
+    const ref = imageCache[genderKey];
+    if (!ref) return;
+    document.querySelectorAll('.unit[data-name*="rover"]').forEach(u => {
+        u.querySelector('.unit-icon').style.backgroundImage = `url('${ref.url}')`;
+    });
+}
 
 // --- Viewport Panning, Zooming & Anti-Void ---
 function updateTransform(smooth = false) {
@@ -131,6 +146,7 @@ fetch('characters.json').then(r => r.json()).then(list => {
         }
     });
     loadImagesToUnsorted(unsortedZone);
+    applyRoverGender();
     isDirty = false;
 }).catch(() => {});
 
@@ -208,8 +224,10 @@ document.getElementById('json-input').addEventListener('change', (e) => {
             document.getElementById('show-names-toggle').checked = !data.hideNames;
             if (data.snapToGrid !== undefined) snapToGrid = data.snapToGrid;
             document.getElementById('snap-grid-toggle').checked = snapToGrid;
+            if (data.roverGender) { roverGender = data.roverGender; document.getElementById('rover-gender-select').value = roverGender; }
             validateRosterAfterLoad();
             loadImagesToUnsorted(document.getElementById('zone-unsorted'));
+            applyRoverGender();
             isDirty = false;
         } catch(err) {
             alert("Error parsing JSON layout file. Creating unsorted units instead.");
@@ -712,7 +730,7 @@ function buildTeamFromSearch(query) {
 
 // --- JSON Save ---
 document.getElementById('save-btn').addEventListener('click', () => {
-    let data = { teams: [], roster: {}, hideNames: document.body.classList.contains('hide-names'), snapToGrid };
+    let data = { teams: [], roster: {}, hideNames: document.body.classList.contains('hide-names'), snapToGrid, roverGender };
 
     document.querySelectorAll('.team').forEach(team => {
         let units = Array.from(team.querySelectorAll('.unit')).map(u => u.dataset.name);
