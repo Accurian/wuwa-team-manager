@@ -4,9 +4,9 @@ let panX = 0, panY = 0;
 let isDirty = false;
 let snapToGrid = false;
 let roverGender = 'male';
-let layoutMode = 'freeform';
-let rowDirection = 'horizontal';
-let rowAlign = 'left';
+let layoutMode = 'rows';
+let rowDirection = 'vertical';
+let rowAlign = 'center';
 let imageCache = {};
 let searchSpawnCounter = 0;
 
@@ -229,6 +229,11 @@ document.getElementById('unsorted-title').addEventListener('click', toggleBottom
 document.getElementById('unowned-title').addEventListener('click', toggleBottomRosters);
 
 buildRows();
+// Apply default settings
+if (layoutMode === 'rows') switchLayoutMode('rows');
+applyRowDirection(rowDirection);
+applyRowAlign(rowAlign);
+document.body.classList.add('hide-names');
 
 // --- Viewport Panning, Zooming & Anti-Void ---
 function updateTransform(smooth = false) {
@@ -827,7 +832,7 @@ function createNewTeam(unitNode, clientX, clientY, bypassPositioning = false, ta
 
     let lockIcon = document.createElement('div');
     lockIcon.className = 'lock-indicator';
-    lockIcon.innerHTML = '<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>';
+    lockIcon.innerHTML = '<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0"/></svg>';
     lockIcon.addEventListener('mousedown', (e) => {
         if (e.button === 0) e.stopPropagation();
     });
@@ -893,6 +898,12 @@ function toggleTeamLock(team, forceState = null) {
         team.classList.add('locked');
     } else {
         team.classList.remove('locked');
+    }
+    const lockIcon = team.querySelector('.lock-indicator');
+    if (lockIcon) {
+        lockIcon.innerHTML = isLocked
+            ? '<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>'
+            : '<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0"/></svg>';
     }
     markDirty();
 }

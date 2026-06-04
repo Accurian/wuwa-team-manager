@@ -30,8 +30,8 @@ A drag-and-drop team composition manager for Wuthering Waves. Build teams, assig
 - **Freeform** — absolute-positioned canvas with zoom/pan and snap-to-grid. Teams are placed freely
 - **Rows** — six element rows (Aero, Electro, Spectro, Fusion, Glacio, Havoc) plus an unassigned row. Teams flow inside rows
 
-  - **Row Direction**: horizontal (default, rows stack vertically, teams flow left-to-right) or vertical (rows as columns, teams flow top-to-bottom)
-  - **Row Alignment**: left / center / right alignment for teams inside rows
+  - **Row Direction**: horizontal or vertical (default, rows as columns, teams flow top-to-bottom)
+  - **Row Alignment**: left / center (default) / right alignment for teams inside rows
   - **Drag rows** by their top bar to reorder
 
 ### Roster Organization
@@ -46,12 +46,12 @@ A drag-and-drop team composition manager for Wuthering Waves. Build teams, assig
 - Toggle between Male/Female in Settings. Only the active Rover variant appears in the roster; existing Rover icons swap on toggle
 
 ### Settings
-- **Show Character Names** — toggle unit name labels on/off
-- **Snap to Grid** — snap teams to 40px grid in freeform mode
-- **Layout Style** — switch between Freeform and Rows
-- **Row Direction** — horizontal or vertical rows
-- **Row Alignment** — left / center / right alignment for row content
-- **Rover Icon** — Male / Female
+- **Show Character Names** — toggle unit name labels on/off (default: off)
+- **Snap to Grid** — snap teams to 40px grid in freeform mode (default: off)
+- **Layout Style** — switch between Freeform and Rows (default: Rows)
+- **Row Direction** — horizontal or vertical (default: vertical)
+- **Row Alignment** — left / center / right (default: center)
+- **Rover Icon** — Male / Female (default: Male)
 
 ## Deployment
 
