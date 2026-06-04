@@ -11,22 +11,8 @@ https://wuwa-team-manager.vercel.app/
 ## Account Features
 - Create an account to use the cloud sync feature which allows you to sync up to **10 custom `.png` icons** (50KB max per icon)
 
-
-> **Disclaimer**: This project was entirely vibe-coded. If you run into any issues, please let me know!
-
 ## Deployment
 
 Static site — no backend required. Deploy to Vercel, Netlify, GitHub Pages, or any static host. A `vercel.json` is included for Vercel.
 
-## File Structure
-
-```
-index.html
-styles.css
-script.js
-characters.json
-Character_Icons/
-Element_Icons/
-wuwa-team-manager.json
-vercel.json
-```
+> **Disclaimer**: This project was entirely vibe-coded. If you run into any issues, please let me know!
