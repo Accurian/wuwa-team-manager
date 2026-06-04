@@ -191,12 +191,12 @@ body.hide-names .unit-name { display: none; }
 
 .lock-indicator, .delete-btn {
     width: 18px; height: 18px; background: #5a5a6a; color: #fff;
-    font-size: 11px; border-radius: 4px; display: none;
+    font-size: 11px; border-radius: 4px; display: flex;
     justify-content: center; align-items: center; flex-shrink: 0;
     cursor: pointer; line-height: 1;
 }
 .lock-indicator:hover, .delete-btn:hover { background: #7a7a8a; }
-.team.locked .lock-indicator { display: flex; }
+.team.locked .lock-indicator { background: #c7c7c7; color: #1a1a24; }
 .team .delete-btn { display: flex; }
 
 .element-badge {

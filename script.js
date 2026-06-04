@@ -56,6 +56,7 @@ function applyRoverGender() {
     const ref = imageCache[genderKey];
     if (!ref) return;
     document.querySelectorAll('.unit[data-name*="rover"]').forEach(u => {
+        u.dataset.name = genderKey;
         u.querySelector('.unit-icon').style.backgroundImage = `url('${ref.url}')`;
     });
 }
