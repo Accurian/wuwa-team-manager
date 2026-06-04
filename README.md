@@ -2,7 +2,7 @@
 
 A team building manager for Wuthering Waves, mainly created for Endstate Matrix but can be used for general use.
 
-https://wuwa-team-manager.vercel.app/
+Link: https://wuwa-team-manager.vercel.app/
 
 ## How to use
 
@@ -14,6 +14,6 @@ https://wuwa-team-manager.vercel.app/
 
 ## Deployment
 
-Static site, no backend required. Deploy to Vercel, Netlify, GitHub Pages, or any static host. A `vercel.json` is included for Vercel.
+You can download and run this site locally if you prefer, no backend required. Deploy to Vercel, Netlify, GitHub Pages, or any static host. A `vercel.json` is included for Vercel.
 
 > **Disclaimer**: This project was entirely vibe-coded. If you run into any issues, please let me know!
