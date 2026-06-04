@@ -8,7 +8,7 @@ https://wuwa-team-manager.vercel.app/
 Press **spacebar** to input your team, or **drag and drop**!
 - **Missing a character?** Use the upload button (folder icon) to drop a folder of `.png` icons — each file becomes a draggable unit by its filename.
 
-> **Disclaimer**: This project was entirely vibe-coded — no guarantees, no QA, use at your own risk.
+> **Disclaimer**: This project was entirely vibe-coded. If you run into any issues, please let me know!
 
 ## Deployment
 
