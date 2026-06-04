@@ -32,6 +32,7 @@
         <div id="workspace-plane">
             <div id="grid-bg"></div>
             </div>
+        <div id="rows-container" class="rows-container"></div>
         <div class="zoom-container">
             <span style="font-size:12px; color:#aaa;">+</span>
             <input type="range" id="zoom-slider" orient="vertical" min="0.4" max="2.5" step="0.1" value="1">
@@ -66,6 +67,13 @@
             <div class="setting-row">
                 <label>Snap to Grid (Teams)</label>
                 <input type="checkbox" id="snap-grid-toggle">
+            </div>
+            <div class="setting-row">
+                <label>Layout Style</label>
+                <select id="layout-mode-select" style="background:#2a2a35;color:#e0e0e0;border:1px solid #4a4a5a;border-radius:4px;padding:2px 4px;outline:none;">
+                    <option value="freeform">Freeform</option>
+                    <option value="rows">Rows</option>
+                </select>
             </div>
             <div class="setting-row">
                 <label>Rover Icon</label>

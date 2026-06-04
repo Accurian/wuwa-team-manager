@@ -4,6 +4,7 @@ let panX = 0, panY = 0;
 let isDirty = false;
 let snapToGrid = false;
 let roverGender = 'male';
+let layoutMode = 'freeform';
 let imageCache = {};
 let searchSpawnCounter = 0;
 
@@ -56,6 +57,131 @@ function applyRoverGender() {
         u.querySelector('.unit-icon').style.backgroundImage = `url('${ref.url}')`;
     });
 }
+
+const ELEMENT_KEYS = ['aero', 'electro', 'spectro', 'fusion', 'glacio', 'havoc'];
+const ROWS_CONTAINER = document.getElementById('rows-container');
+
+function buildRows() {
+    ROWS_CONTAINER.innerHTML = '';
+    ELEMENT_KEYS.forEach(key => {
+        let row = document.createElement('div');
+        row.className = 'row';
+        row.dataset.element = '';
+
+        let topbar = document.createElement('div');
+        topbar.className = 'row-topbar';
+
+        let badge = document.createElement('div');
+        badge.className = 'element-badge';
+        badge.addEventListener('mousedown', (e) => e.stopPropagation());
+        badge.addEventListener('click', (e) => {
+            e.stopPropagation();
+            showElementSelectorForRow(badge, row);
+        });
+        topbar.appendChild(badge);
+
+        let label = document.createElement('span');
+        label.className = 'row-element-label';
+        label.textContent = '—';
+        topbar.appendChild(label);
+
+        row.appendChild(topbar);
+
+        let body = document.createElement('div');
+        body.className = 'row-body';
+        row.appendChild(body);
+
+        ROWS_CONTAINER.appendChild(row);
+    });
+}
+
+function showElementSelectorForRow(badge, row) {
+    const popup = document.getElementById('element-selector-popup');
+    const rect = badge.getBoundingClientRect();
+    popup.style.left = (rect.left - 50) + 'px';
+    popup.style.top = (rect.bottom + 4) + 'px';
+    popup.innerHTML = '';
+
+    for (const [key, elem] of Object.entries(ELEMENTS)) {
+        const opt = document.createElement('div');
+        opt.className = 'element-option';
+        opt.dataset.element = key;
+        opt.style.background = elem.color;
+        opt.title = elem.name;
+        opt.addEventListener('click', (e) => {
+            e.stopPropagation();
+            const current = row.dataset.element;
+            if (key === current) {
+                applyRowElement(row, null);
+            } else {
+                applyRowElement(row, key);
+            }
+            popup.style.display = 'none';
+        });
+        popup.appendChild(opt);
+    }
+
+    popup.querySelectorAll('.element-option').forEach(opt => {
+        opt.style.borderColor = opt.dataset.element === row.dataset.element ? '#fff' : 'transparent';
+    });
+    popup.style.display = 'flex';
+}
+
+function applyRowElement(row, elementKey) {
+    const badge = row.querySelector('.element-badge');
+    const label = row.querySelector('.row-element-label');
+    if (elementKey) {
+        const c = ELEMENTS[elementKey].color;
+        row.dataset.element = elementKey;
+        row.classList.add('has-element');
+        row.style.setProperty('--row-grad', `linear-gradient(to right, ${c} 50%, ${c} 50%)`);
+        badge.style.backgroundColor = c;
+        badge.style.backgroundImage = `url('Element_Icons/${elementKey}.png')`;
+        badge.classList.add('has-element');
+        label.textContent = ELEMENTS[elementKey].name.toUpperCase();
+    } else {
+        delete row.dataset.element;
+        row.classList.remove('has-element');
+        row.style.removeProperty('--row-grad');
+        badge.style.backgroundColor = '';
+        badge.style.backgroundImage = '';
+        badge.classList.remove('has-element');
+        label.textContent = '—';
+    }
+}
+
+function switchLayoutMode(mode) {
+    layoutMode = mode;
+    if (mode === 'rows') {
+        document.body.classList.add('layout-rows');
+        document.getElementById('workspace-plane').querySelectorAll('.team').forEach(team => {
+            const elem = team.dataset.element || '';
+            let targetRow = null;
+            if (elem) {
+                targetRow = ROWS_CONTAINER.querySelector(`.row[data-element="${elem}"]`);
+            }
+            if (!targetRow) targetRow = ROWS_CONTAINER.querySelector('.row:not([data-element])') || ROWS_CONTAINER.firstElementChild;
+            targetRow.querySelector('.row-body').appendChild(team);
+            team.style.left = ''; team.style.top = '';
+        });
+    } else {
+        ROWS_CONTAINER.querySelectorAll('.team').forEach(team => {
+            workspacePlane.appendChild(team);
+            const rect = team.getBoundingClientRect();
+            const coords = getPlaneCoords(rect.left + rect.width/2, rect.top + rect.height/2);
+            team.style.left = (coords.x - 135) + 'px';
+            team.style.top = (coords.y - 45) + 'px';
+        });
+        document.body.classList.remove('layout-rows');
+    }
+}
+
+document.getElementById('layout-mode-select').addEventListener('change', (e) => {
+    switchLayoutMode(e.target.value);
+    markDirty();
+});
+
+buildRows();
 
 // --- Viewport Panning, Zooming & Anti-Void ---
 function updateTransform(smooth = false) {
@@ -200,17 +326,27 @@ document.getElementById('json-input').addEventListener('change', (e) => {
                 }
             }
 
+            if (data.layoutMode) { layoutMode = data.layoutMode; document.getElementById('layout-mode-select').value = layoutMode; }
+            if (layoutMode === 'rows') switchLayoutMode('rows');
             data.teams.forEach(tData => {
                 let team = createNewTeam(null, 0, 0, true);
-                team.style.left = tData.x;
-                team.style.top = tData.y;
+                if (layoutMode !== 'rows') {
+                    team.style.left = tData.x;
+                    team.style.top = tData.y;
+                }
 
                 if (tData.name) {
                     let label = team.querySelector('.team-name-label');
                     if (label) label.textContent = tData.name;
                 }
                 if (tData.locked) toggleTeamLock(team, true);
-                if (tData.element) applyElement(team, tData.element, tData.element2 || null);
+                if (tData.element) {
+                    applyElement(team, tData.element, tData.element2 || null);
+                    if (layoutMode === 'rows') {
+                        let r = ROWS_CONTAINER.querySelector(`.row[data-element="${tData.element}"]`) || ROWS_CONTAINER.firstElementChild;
+                        if (r) r.querySelector('.row-body').appendChild(team);
+                    }
+                }
 
                 tData.units.forEach(uName => {
                     if (imageCache[uName]) {
@@ -337,6 +473,8 @@ document.addEventListener('mousedown', (e) => {
     }
 
     if (unitTarget) teamTarget = null;
+    // In rows mode, teams are not draggable
+    if (layoutMode === 'rows') teamTarget = null;
     isDragMoved = false;
 
     if (unitTarget) {
@@ -551,25 +689,28 @@ function createNewTeam(unitNode, clientX, clientY, bypassPositioning = false) {
 
     newTeam.appendChild(topBar);
 
-    if (!bypassPositioning) {
-        let coords = getPlaneCoords(clientX, clientY);
-        let x = coords.x - 135;
-        let y = coords.y - 45;
-
-        if (snapToGrid) {
-            x = Math.round(x / 40) * 40;
-            y = Math.round(y / 40) * 40;
-        }
-        newTeam.style.left = x + 'px';
-        newTeam.style.top = y + 'px';
-    }
-
     if (unitNode) {
         newTeam.appendChild(unitNode);
         resetInlinePositions(newTeam);
     }
 
-    workspacePlane.appendChild(newTeam);
+    if (layoutMode === 'rows') {
+        let targetRow = ROWS_CONTAINER.querySelector('.row:not([data-element])') || ROWS_CONTAINER.firstElementChild;
+        targetRow.querySelector('.row-body').appendChild(newTeam);
+    } else {
+        if (!bypassPositioning) {
+            let coords = getPlaneCoords(clientX, clientY);
+            let x = coords.x - 135;
+            let y = coords.y - 45;
+            if (snapToGrid) {
+                x = Math.round(x / 40) * 40;
+                y = Math.round(y / 40) * 40;
+            }
+            newTeam.style.left = x + 'px';
+            newTeam.style.top = y + 'px';
+        }
+        workspacePlane.appendChild(newTeam);
+    }
     updateTeamLayout(newTeam);
     return newTeam;
 }
@@ -730,7 +871,7 @@ function buildTeamFromSearch(query) {
 
 // --- JSON Save ---
 document.getElementById('save-btn').addEventListener('click', () => {
-    let data = { teams: [], roster: {}, hideNames: document.body.classList.contains('hide-names'), snapToGrid, roverGender };
+    let data = { teams: [], roster: {}, hideNames: document.body.classList.contains('hide-names'), snapToGrid, roverGender, layoutMode };
 
     document.querySelectorAll('.team').forEach(team => {
         let units = Array.from(team.querySelectorAll('.unit')).map(u => u.dataset.name);
