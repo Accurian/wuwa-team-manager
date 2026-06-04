@@ -76,14 +76,19 @@ async function checkSession() {
 
 function updateUserUI() {
     const btn = document.getElementById('user-btn');
+    const syncBtn = document.getElementById('sync-btn');
     if (currentUser) {
         btn.title = currentUser.email;
         btn.innerHTML = '<svg viewBox="0 0 24 24"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>';
         btn.style.borderColor = '#2ecc71';
+        syncBtn.style.borderColor = '#2ecc71';
+        syncBtn.title = 'Sync to Cloud';
     } else {
         btn.title = 'Login';
         btn.innerHTML = '<svg viewBox="0 0 24 24"><path d="M11 7L9.6 8.4l2.6 2.6H2v2h10.2l-2.6 2.6L11 17l5-5-5-5zm9 12h-8v2h8c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2h-8v2h8v14z"/></svg>';
         btn.style.borderColor = '#4a4a5a';
+        syncBtn.style.borderColor = '#4a4a5a';
+        syncBtn.title = 'Sync to Cloud';
     }
 }
 
@@ -1301,7 +1306,7 @@ function buildTeamFromSearch(query) {
 }
 
 // --- JSON Save ---
-document.getElementById('save-btn').addEventListener('click', () => {
+function gatherSaveData() {
     let data = { teams: [], roster: {}, rows: [], hideNames: document.body.classList.contains('hide-names'), snapToGrid, roverGender, layoutMode, rowDirection, rowAlign };
 
     document.querySelectorAll('.team').forEach(team => {
@@ -1327,6 +1332,11 @@ document.getElementById('save-btn').addEventListener('click', () => {
         data.rows.push({ element: row.dataset.element || "" });
     });
 
+    return data;
+}
+
+document.getElementById('save-btn').addEventListener('click', () => {
+    let data = gatherSaveData();
     const blob = new Blob([JSON.stringify(data, null, 2)], {type: 'application/json'});
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
@@ -1337,4 +1347,45 @@ document.getElementById('save-btn').addEventListener('click', () => {
     isDirty = false;
 
     cloudSave(data);
+});
+
+let lastSyncTime = 0;
+const SYNC_COOLDOWN = 30000;
+document.getElementById('sync-btn').addEventListener('click', async () => {
+    const now = Date.now();
+    if (now - lastSyncTime < SYNC_COOLDOWN) {
+        const remaining = Math.ceil((SYNC_COOLDOWN - (now - lastSyncTime)) / 1000);
+        const btn = document.getElementById('sync-btn');
+        btn.title = `Wait ${remaining}s`;
+        btn.style.borderColor = '#e67e22';
+        setTimeout(() => {
+            btn.title = 'Sync to Cloud';
+            btn.style.borderColor = currentUser ? '#2ecc71' : '#4a4a5a';
+        }, 1500);
+        return;
+    }
+    if (!currentUser) {
+        const btn = document.getElementById('sync-btn');
+        btn.title = 'Login first';
+        btn.style.borderColor = '#e74c3c';
+        setTimeout(() => {
+            btn.title = 'Sync to Cloud';
+            btn.style.borderColor = '#4a4a5a';
+        }, 2000);
+        return;
+    }
+
+    lastSyncTime = now;
+    const btn = document.getElementById('sync-btn');
+    btn.title = 'Syncing...';
+    btn.style.borderColor = '#3498db';
+
+    await cloudSave(gatherSaveData());
+
+    btn.title = 'Synced!';
+    btn.style.borderColor = '#2ecc71';
+    setTimeout(() => {
+        btn.title = 'Sync to Cloud';
+        btn.style.borderColor = '#2ecc71';
+    }, 2000);
 });
