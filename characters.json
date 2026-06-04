@@ -125,6 +125,16 @@
         "file":  "Resources/Lingyang.png"
     },
     {
+        "key":  "lucilla",
+        "displayName":  "Lucilla",
+        "file":  "Resources/Lucilla.png"
+    },
+    {
+        "key":  "lucy",
+        "displayName":  "Lucy",
+        "file":  "Resources/Lucy.png"
+    },
+    {
         "key":  "lumi",
         "displayName":  "Lumi",
         "file":  "Resources/Lumi.png"
@@ -168,6 +178,11 @@
         "key":  "qiuyuan",
         "displayName":  "Qiuyuan",
         "file":  "Resources/Qiuyuan.png"
+    },
+    {
+        "key":  "rebecca",
+        "displayName":  "Rebecca",
+        "file":  "Resources/Rebecca.png"
     },
     {
         "key":  "roccia",
