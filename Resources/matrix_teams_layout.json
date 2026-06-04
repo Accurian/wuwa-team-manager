@@ -1,0 +1,209 @@
+{
+  "teams": [
+    {
+      "name": "Cartethyia Quickswap",
+      "x": "-1280px",
+      "y": "-400px",
+      "locked": true,
+      "element": "aero",
+      "element2": "",
+      "units": [
+        "cartethyia",
+        "ciaccona",
+        "aero rover"
+      ]
+    },
+    {
+      "name": "Fusion Burst",
+      "x": "-1920px",
+      "y": "-400px",
+      "locked": false,
+      "element": "fusion",
+      "element2": "",
+      "units": [
+        "aemeath",
+        "denia",
+        "chisa"
+      ]
+    },
+    {
+      "name": "Fusion Quickswap",
+      "x": "-1920px",
+      "y": "-240px",
+      "locked": true,
+      "element": "fusion",
+      "element2": "",
+      "units": [
+        "changli",
+        "brant",
+        "lupa"
+      ]
+    },
+    {
+      "name": "Jinhsi Quickswap",
+      "x": "-960px",
+      "y": "-400px",
+      "locked": true,
+      "element": "spectro",
+      "element2": "",
+      "units": [
+        "jinhsi",
+        "yinlin",
+        "shorekeeper"
+      ]
+    },
+    {
+      "name": "Glacio Chafe",
+      "x": "-1600px",
+      "y": "-400px",
+      "locked": true,
+      "element": "glacio",
+      "element2": "",
+      "units": [
+        "hiyuki",
+        "lucilla",
+        "mornye"
+      ]
+    },
+    {
+      "name": "Camellya Hypercarry",
+      "x": "-640px",
+      "y": "-400px",
+      "locked": true,
+      "element": "havoc",
+      "element2": "",
+      "units": [
+        "camellya",
+        "sanhua",
+        "shorekeeper"
+      ]
+    },
+    {
+      "name": "Carlotta Hypercarry",
+      "x": "-1600px",
+      "y": "-240px",
+      "locked": true,
+      "element": "glacio",
+      "element2": "",
+      "units": [
+        "carlotta",
+        "yangyang",
+        "verina"
+      ]
+    },
+    {
+      "name": "",
+      "x": "-1920px",
+      "y": "-80px",
+      "locked": true,
+      "element": "fusion",
+      "element2": "",
+      "units": [
+        "encore",
+        "mortefi",
+        "baizhi"
+      ]
+    },
+    {
+      "name": "Electro Quickswap",
+      "x": "-320px",
+      "y": "-400px",
+      "locked": true,
+      "element": "electro",
+      "element2": "",
+      "units": [
+        "xiangli yao",
+        "calcharo",
+        "verina"
+      ]
+    },
+    {
+      "name": "Cyberpunk",
+      "x": "-961px",
+      "y": "-239px",
+      "locked": true,
+      "element": "spectro",
+      "element2": "",
+      "units": [
+        "lucy",
+        "rebecca",
+        "mornye"
+      ]
+    }
+  ],
+  "roster": {
+    "zone-main": [
+      {
+        "name": "augusta",
+        "charges": "1"
+      },
+      {
+        "name": "chixia",
+        "charges": "1"
+      },
+      {
+        "name": "danjin",
+        "charges": "1"
+      },
+      {
+        "name": "galbrena",
+        "charges": "1"
+      },
+      {
+        "name": "jiyan",
+        "charges": "1"
+      },
+      {
+        "name": "lingyang",
+        "charges": "1"
+      },
+      {
+        "name": "sigrika",
+        "charges": "1"
+      }
+    ],
+    "zone-sub": [
+      {
+        "name": "aalto",
+        "charges": "1"
+      },
+      {
+        "name": "iuno",
+        "charges": "1"
+      },
+      {
+        "name": "jianxin",
+        "charges": "1"
+      },
+      {
+        "name": "lynae",
+        "charges": "1"
+      },
+      {
+        "name": "qiuyuan",
+        "charges": "1"
+      },
+      {
+        "name": "yuanwu",
+        "charges": "1"
+      },
+      {
+        "name": "zhezhi",
+        "charges": "1"
+      }
+    ],
+    "zone-support": [
+      {
+        "name": "buling",
+        "charges": "2"
+      },
+      {
+        "name": "youhu",
+        "charges": "1"
+      }
+    ],
+    "zone-unsorted": []
+  },
+  "hideNames": true,
+  "snapToGrid": true
+}
