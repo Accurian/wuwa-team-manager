@@ -2,7 +2,7 @@
 
 A team building manager for Wuthering Waves, mainly created for Endstate Matrix but can be used for general use.
 
-Link: https://wuwa-team-manager.vercel.app/
+https://wuwa-team-manager.vercel.app/
 
 ## How to use
 
