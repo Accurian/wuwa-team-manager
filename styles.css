@@ -28,8 +28,8 @@ header {
 .icon-btn:hover { background: #3a3a45; color: white; border-color: #c7c7c7; }
 .icon-btn svg { width: 20px; height: 20px; fill: currentColor; }
 
-.folder-upload-wrapper { position: relative; }
-#folder-input {
+.folder-upload-wrapper, .json-upload-wrapper { position: relative; }
+#icons-input, #json-input {
     position: absolute; top: 0; left: 0; width: 100%; height: 100%;
     opacity: 0; cursor: pointer;
 }
@@ -177,10 +177,12 @@ body.hide-names .unit-name { display: none; }
 
 .element-badge {
     width: 18px; height: 18px; border-radius: 50%; cursor: pointer;
-    background: rgba(0,0,0,0.4); border: 1px solid #4a4a5a;
+    background-color: rgba(0,0,0,0.4);
+    background-size: contain; background-position: center; background-repeat: no-repeat;
+    border: 1px solid #4a4a5a;
     transition: 0.2s; box-sizing: border-box; flex-shrink: 0;
 }
-.element-badge:hover { background: rgba(0,0,0,0.7); }
+.element-badge:hover { background-color: rgba(0,0,0,0.7); }
 .element-badge.has-element { border-color: transparent; }
 
 .team-name-label {

@@ -122,19 +122,16 @@ document.addEventListener('mousemove', (e) => {
 });
 document.addEventListener('mouseup', () => { if (isResizing) { isResizing = false; document.body.style.cursor = 'default'; } });
 
-// --- Unified Loader (Images + JSON) ---
-document.getElementById('folder-input').addEventListener('change', (e) => {
+// --- Icon Loader ---
+document.getElementById('icons-input').addEventListener('change', (e) => {
     const files = e.target.files;
     if (!files.length) return;
 
     const unsortedZone = document.getElementById('zone-unsorted');
-    let jsonFile = null;
     let newImagesFound = false;
 
     for (let file of files) {
-        if (file.name.match(/\.json$/i)) {
-            jsonFile = file;
-        } else if (file.name.match(/\.(png|jpe?g|gif|webp)$/i)) {
+        if (file.name.match(/\.(png|jpe?g|gif|webp)$/i)) {
             let rawName = file.name.replace(/\.[^/.]+$/, "");
             let keyName = rawName.toLowerCase();
             if (!imageCache[keyName]) {
@@ -144,64 +141,70 @@ document.getElementById('folder-input').addEventListener('change', (e) => {
         }
     }
 
-    if (jsonFile) {
-        const reader = new FileReader();
-        reader.onload = function(event) {
-            try {
-                const data = JSON.parse(event.target.result);
-
-                document.querySelectorAll('.team').forEach(t => t.remove());
-                document.querySelectorAll('.unit').forEach(u => u.remove());
-
-                for (const [zoneId, units] of Object.entries(data.roster)) {
-                    const zone = document.getElementById(zoneId);
-                    if (zone) {
-                        units.forEach(uData => {
-                            if (imageCache[uData.name]) {
-                                let uEl = createUnitElement(uData.name, imageCache[uData.name].displayName, imageCache[uData.name].url, zone);
-                                uEl.dataset.charges = uData.charges || "1";
-                                uEl.querySelector('.charge-badge').style.display = uEl.dataset.charges === "2" ? 'block' : 'none';
-                            }
-                        });
-                    }
-                }
-
-                data.teams.forEach(tData => {
-                    let team = createNewTeam(null, 0, 0, true);
-                    team.style.left = tData.x;
-                    team.style.top = tData.y;
-
-                    if (tData.name) {
-                        let label = team.querySelector('.team-name-label');
-                        if (label) label.textContent = tData.name;
-                    }
-                    if (tData.locked) toggleTeamLock(team, true);
-                    if (tData.element) applyElement(team, tData.element, tData.element2 || null);
-
-                    tData.units.forEach(uName => {
-                        if (imageCache[uName]) {
-                            createUnitElement(uName, imageCache[uName].displayName, imageCache[uName].url, team);
-                        }
-                    });
-                    updateTeamLayout(team);
-                });
-                if (data.hideNames) document.body.classList.add('hide-names');
-                else document.body.classList.remove('hide-names');
-                document.getElementById('show-names-toggle').checked = !data.hideNames;
-                if (data.snapToGrid !== undefined) snapToGrid = data.snapToGrid;
-                document.getElementById('snap-grid-toggle').checked = snapToGrid;
-                validateRosterAfterLoad();
-                loadImagesToUnsorted(unsortedZone);
-                isDirty = false;
-            } catch(err) {
-                alert("Error parsing JSON layout file. Creating unsorted units instead.");
-                loadImagesToUnsorted(unsortedZone);
-            }
-        };
-        reader.readAsText(jsonFile);
-    } else if (newImagesFound) {
+    if (newImagesFound) {
         loadImagesToUnsorted(unsortedZone);
     }
+    e.target.value = '';
+});
+
+// --- JSON Loader ---
+document.getElementById('json-input').addEventListener('change', (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = function(event) {
+        try {
+            const data = JSON.parse(event.target.result);
+
+            document.querySelectorAll('.team').forEach(t => t.remove());
+            document.querySelectorAll('.unit').forEach(u => u.remove());
+
+            for (const [zoneId, units] of Object.entries(data.roster)) {
+                const zone = document.getElementById(zoneId);
+                if (zone) {
+                    units.forEach(uData => {
+                        if (imageCache[uData.name]) {
+                            let uEl = createUnitElement(uData.name, imageCache[uData.name].displayName, imageCache[uData.name].url, zone);
+                            uEl.dataset.charges = uData.charges || "1";
+                            uEl.querySelector('.charge-badge').style.display = uEl.dataset.charges === "2" ? 'block' : 'none';
+                        }
+                    });
+                }
+            }
+
+            data.teams.forEach(tData => {
+                let team = createNewTeam(null, 0, 0, true);
+                team.style.left = tData.x;
+                team.style.top = tData.y;
+
+                if (tData.name) {
+                    let label = team.querySelector('.team-name-label');
+                    if (label) label.textContent = tData.name;
+                }
+                if (tData.locked) toggleTeamLock(team, true);
+                if (tData.element) applyElement(team, tData.element, tData.element2 || null);
+
+                tData.units.forEach(uName => {
+                    if (imageCache[uName]) {
+                        createUnitElement(uName, imageCache[uName].displayName, imageCache[uName].url, team);
+                    }
+                });
+                updateTeamLayout(team);
+            });
+            if (data.hideNames) document.body.classList.add('hide-names');
+            else document.body.classList.remove('hide-names');
+            document.getElementById('show-names-toggle').checked = !data.hideNames;
+            if (data.snapToGrid !== undefined) snapToGrid = data.snapToGrid;
+            document.getElementById('snap-grid-toggle').checked = snapToGrid;
+            validateRosterAfterLoad();
+            loadImagesToUnsorted(document.getElementById('zone-unsorted'));
+            isDirty = false;
+        } catch(err) {
+            alert("Error parsing JSON layout file. Creating unsorted units instead.");
+            loadImagesToUnsorted(document.getElementById('zone-unsorted'));
+        }
+    };
+    reader.readAsText(file);
     e.target.value = '';
 });
 
@@ -612,10 +615,12 @@ function applyElement(team, elementKey, elementKey2) {
         if (elementKey2) team.dataset.element2 = elementKey2;
         team.style.setProperty('--elem-grad', `linear-gradient(to right, ${c1} 50%, ${c2} 50%)`);
         team.classList.add('has-element');
-        badge.style.background = c1;
+        badge.style.backgroundColor = c1;
+        badge.style.backgroundImage = `url('Element_Icons/${elementKey}.png')`;
         badge.classList.add('has-element');
     } else {
-        badge.style.background = '';
+        badge.style.backgroundColor = '';
+        badge.style.backgroundImage = '';
         badge.classList.remove('has-element');
     }
     markDirty();
@@ -721,7 +726,7 @@ document.getElementById('save-btn').addEventListener('click', () => {
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = 'matrix_teams_layout.json';
+    a.download = 'wuwa-team-manager.json';
     a.click();
     URL.revokeObjectURL(url);
     isDirty = false;
