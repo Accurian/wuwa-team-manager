@@ -106,7 +106,7 @@ function showElementSelectorForRow(badge, row) {
         const opt = document.createElement('div');
         opt.className = 'element-option';
         opt.dataset.element = key;
-        opt.style.background = elem.color;
+        opt.style.background = `url('Element_Icons/${key}.png') no-repeat center / contain, ${elem.color}`;
         opt.title = elem.name;
         opt.addEventListener('click', (e) => {
             e.stopPropagation();
@@ -700,6 +700,18 @@ function createNewTeam(unitNode, clientX, clientY, bypassPositioning = false, ta
     });
     topBar.appendChild(lockIcon);
 
+    let delBtn = document.createElement('div');
+    delBtn.className = 'delete-btn';
+    delBtn.innerHTML = '&#10005;';
+    delBtn.addEventListener('mousedown', (e) => {
+        if (e.button === 0) e.stopPropagation();
+    });
+    delBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        deleteTeam(newTeam);
+    });
+    topBar.appendChild(delBtn);
+
     newTeam.appendChild(topBar);
 
     if (unitNode) {
@@ -744,6 +756,17 @@ function toggleTeamLock(team, forceState = null) {
     markDirty();
 }
 
+function deleteTeam(team) {
+    const unsorted = document.getElementById('zone-unsorted');
+    team.querySelectorAll('.unit').forEach(u => {
+        unsorted.appendChild(u);
+        resetInlinePositions(unsorted);
+    });
+    team.remove();
+    sortAllZones();
+    markDirty();
+}
+
 // --- Element Selection ---
 function showElementSelector(badge, team) {
     const popup = document.getElementById('element-selector-popup');
@@ -756,7 +779,7 @@ function showElementSelector(badge, team) {
         const opt = document.createElement('div');
         opt.className = 'element-option';
         opt.dataset.element = key;
-        opt.style.background = elem.color;
+        opt.style.background = `url('Element_Icons/${key}.png') no-repeat center / contain, ${elem.color}`;
         opt.title = elem.name;
         opt.addEventListener('click', (e) => {
             e.stopPropagation();
