@@ -102,7 +102,9 @@ input[type=range][orient=vertical] {
 #zone-unsorted-wrapper {
     height: 110px; border-top: 2px solid #3a3a45;
     display: flex; flex-direction: column; flex-shrink: 0; background-color: #0f0f14;
+    transition: height 0.2s;
 }
+#zone-unsorted-wrapper.collapsed { height: 32px; overflow: hidden; }
 .unsorted-zone { display: flex; align-items: center; overflow-x: auto; white-space: nowrap; }
 
 ::-webkit-scrollbar { width: 8px; height: 8px; }

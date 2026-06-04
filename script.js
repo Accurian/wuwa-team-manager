@@ -181,6 +181,10 @@ document.getElementById('layout-mode-select').addEventListener('change', (e) => 
     markDirty();
 });
 
+document.getElementById('unsorted-title').addEventListener('click', () => {
+    document.getElementById('zone-unsorted-wrapper').classList.toggle('collapsed');
+});
+
 buildRows();
 
 // --- Viewport Panning, Zooming & Anti-Void ---
