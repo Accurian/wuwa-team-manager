@@ -1365,7 +1365,6 @@ document.getElementById('sync-btn').addEventListener('click', async () => {
     }
 
     lastSyncTime = now;
-    const btn = document.getElementById('sync-btn');
     btn.title = 'Syncing...';
     btn.style.borderColor = '#3498db';
 
