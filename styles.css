@@ -149,6 +149,15 @@ div.unit:active { cursor: grabbing; }
     width: 100%; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
 }
 
+.unit-delete {
+    position: absolute; top: -4px; right: -4px;
+    width: 18px; height: 18px; border-radius: 50%;
+    background: #e74c3c; color: #fff;
+    font-size: 13px; line-height: 18px; text-align: center;
+    cursor: pointer; z-index: 5; display: none;
+}
+.drop-zone .unit:hover .unit-delete { display: block; }
+
 /* Toggle for hiding names */
 body.hide-names .unit-name { display: none; }
 

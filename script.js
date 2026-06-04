@@ -223,6 +223,14 @@ function applySaveData(data) {
     document.querySelectorAll('.team').forEach(t => t.remove());
     document.querySelectorAll('.unit').forEach(u => u.remove());
 
+    if (data.customIcons) {
+        for (const [key, iconData] of Object.entries(data.customIcons)) {
+            if (!imageCache[key]) {
+                imageCache[key] = { url: iconData.url, displayName: iconData.displayName, custom: true };
+            }
+        }
+    }
+
     for (const [zoneId, units] of Object.entries(data.roster)) {
         const zone = document.getElementById(zoneId);
         if (zone) {
@@ -562,20 +570,39 @@ fetch('characters.json').then(r => r.json()).then(list => {
     isDirty = false;
 }).catch(() => {});
 
+const MAX_CUSTOM_ICONS = 10;
+const MAX_ICON_SIZE = 50 * 1024;
+
 // --- Icon Loader ---
-document.getElementById('icons-input').addEventListener('change', (e) => {
+document.getElementById('icons-input').addEventListener('change', async (e) => {
     const files = e.target.files;
     if (!files.length) return;
 
     const unsortedZone = document.getElementById('zone-unsorted');
     let newImagesFound = false;
+    let customCount = Object.values(imageCache).filter(v => v.custom).length;
+    let errors = [];
 
     for (let file of files) {
         if (file.name.match(/\.(png|jpe?g|gif|webp)$/i)) {
+            if (file.size > MAX_ICON_SIZE) {
+                errors.push(`${file.name}: exceeds 50KB limit`);
+                continue;
+            }
             let rawName = file.name.replace(/\.[^/.]+$/, "");
             let keyName = rawName.toLowerCase();
             if (!imageCache[keyName]) {
-                imageCache[keyName] = { url: URL.createObjectURL(file), displayName: rawName };
+                if (customCount >= MAX_CUSTOM_ICONS) {
+                    errors.push(`Max 10 custom icons reached. Skipped: ${file.name}`);
+                    continue;
+                }
+                const dataUrl = await new Promise(resolve => {
+                    const r = new FileReader();
+                    r.onload = () => resolve(r.result);
+                    r.readAsDataURL(file);
+                });
+                imageCache[keyName] = { url: dataUrl, displayName: rawName, custom: true };
+                customCount++;
                 newImagesFound = true;
             }
         }
@@ -583,6 +610,9 @@ document.getElementById('icons-input').addEventListener('change', (e) => {
 
     if (newImagesFound) {
         loadImagesToUnsorted(unsortedZone);
+    }
+    if (errors.length) {
+        alert(errors.join('\n'));
     }
     e.target.value = '';
 });
@@ -598,6 +628,14 @@ document.getElementById('json-input').addEventListener('change', (e) => {
 
             document.querySelectorAll('.team').forEach(t => t.remove());
             document.querySelectorAll('.unit').forEach(u => u.remove());
+
+            if (data.customIcons) {
+                for (const [key, iconData] of Object.entries(data.customIcons)) {
+                    if (!imageCache[key]) {
+                        imageCache[key] = { url: iconData.url, displayName: iconData.displayName, custom: true };
+                    }
+                }
+            }
 
             for (const [zoneId, units] of Object.entries(data.roster)) {
                 const zone = document.getElementById(zoneId);
@@ -710,6 +748,20 @@ function createUnitElement(id, displayName, iconUrl, targetNode) {
     unit.appendChild(badge);
     unit.appendChild(icon);
     unit.appendChild(nameLabel);
+
+    if (imageCache[id]?.custom) {
+        const delBtn = document.createElement('div');
+        delBtn.className = 'unit-delete';
+        delBtn.textContent = '×';
+        delBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            unit.remove();
+            delete imageCache[id];
+            sortAllZones();
+            markDirty();
+        });
+        unit.appendChild(delBtn);
+    }
 
     if (targetNode) targetNode.appendChild(unit);
     return unit;
@@ -1331,6 +1383,13 @@ function gatherSaveData() {
     document.querySelectorAll('.row').forEach(row => {
         data.rows.push({ element: row.dataset.element || "" });
     });
+
+    data.customIcons = {};
+    for (const [key, entry] of Object.entries(imageCache)) {
+        if (entry.custom) {
+            data.customIcons[key] = { url: entry.url, displayName: entry.displayName };
+        }
+    }
 
     return data;
 }
