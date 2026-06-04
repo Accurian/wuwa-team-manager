@@ -1,7 +1,7 @@
 // --- Supabase ---
 const SUPABASE_URL = 'https://wbvhtwzfazjmfsdjbxkf.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Indidmh0d3pmYXpqbWZzZGpieGtmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA1ODkxNDIsImV4cCI6MjA5NjE2NTE0Mn0.cmaMMeB8tDEdGan98v5qWVb6SJLqcySUTDvqR1I-G5c';
-const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 let currentUser = null;
 
 // --- Core State & Viewport Mapping ---
@@ -69,7 +69,7 @@ function applyRoverGender() {
 
 // --- Auth ---
 async function checkSession() {
-    const { data: { session } } = await supabase.auth.getSession();
+    const { data: { session } } = await supabaseClient.auth.getSession();
     currentUser = session?.user || null;
     updateUserUI();
 }
@@ -90,7 +90,7 @@ function updateUserUI() {
 let authMode = 'login';
 document.getElementById('user-btn').addEventListener('click', () => {
     if (currentUser) {
-        supabase.auth.signOut();
+        supabaseClient.auth.signOut();
     } else {
         document.getElementById('auth-overlay').style.display = 'flex';
     }
@@ -134,11 +134,11 @@ document.getElementById('auth-submit').addEventListener('click', async () => {
 
     try {
         if (authMode === 'login') {
-            const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+            const { data, error } = await supabaseClient.auth.signInWithPassword({ email, password });
             if (error) throw error;
             document.getElementById('auth-overlay').style.display = 'none';
         } else {
-            const { data, error } = await supabase.auth.signUp({ email, password });
+            const { data, error } = await supabaseClient.auth.signUp({ email, password });
             if (error) throw error;
             successEl.textContent = 'Registered! Check your email to confirm, or try logging in.';
             successEl.style.display = 'block';
@@ -155,7 +155,7 @@ document.getElementById('auth-password').addEventListener('keydown', (e) => {
 });
 
 let initialLoadDone = false;
-supabase.auth.onAuthStateChange((event, session) => {
+supabaseClient.auth.onAuthStateChange((event, session) => {
     currentUser = session?.user || null;
     updateUserUI();
     if (currentUser && !initialLoadDone) {
@@ -168,11 +168,11 @@ supabase.auth.onAuthStateChange((event, session) => {
 async function cloudSave(saveData) {
     if (!currentUser) return;
     try {
-        const { data: existing } = await supabase.from('saves').select('id').eq('user_id', currentUser.id).maybeSingle();
+        const { data: existing } = await supabaseClient.from('saves').select('id').eq('user_id', currentUser.id).maybeSingle();
         if (existing) {
-            await supabase.from('saves').update({ data: saveData, updated_at: new Date().toISOString() }).eq('id', existing.id);
+            await supabaseClient.from('saves').update({ data: saveData, updated_at: new Date().toISOString() }).eq('id', existing.id);
         } else {
-            await supabase.from('saves').insert({ user_id: currentUser.id, data: saveData });
+            await supabaseClient.from('saves').insert({ user_id: currentUser.id, data: saveData });
         }
     } catch (err) {
         console.error('Cloud save failed:', err);
@@ -182,7 +182,7 @@ async function cloudSave(saveData) {
 async function cloudLoad() {
     if (!currentUser) return;
     try {
-        const { data, error } = await supabase.from('saves').select('data').eq('user_id', currentUser.id).maybeSingle();
+        const { data, error } = await supabaseClient.from('saves').select('data').eq('user_id', currentUser.id).maybeSingle();
         if (error) throw error;
         if (data?.data) {
             applySaveData(data.data);
