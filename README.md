@@ -13,6 +13,6 @@ https://wuwa-team-manager.vercel.app/
 
 ## Deployment
 
-Static site — no backend required. Deploy to Vercel, Netlify, GitHub Pages, or any static host. A `vercel.json` is included for Vercel.
+Static site, no backend required. Deploy to Vercel, Netlify, GitHub Pages, or any static host. A `vercel.json` is included for Vercel.
 
 > **Disclaimer**: This project was entirely vibe-coded. If you run into any issues, please let me know!
