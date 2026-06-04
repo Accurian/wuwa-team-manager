@@ -1,0 +1,728 @@
+// --- Core State & Viewport Mapping ---
+let zoomLevel = 1;
+let panX = 0, panY = 0;
+let isDirty = false;
+let snapToGrid = false;
+let imageCache = {};
+let searchSpawnCounter = 0;
+
+const ELEMENTS = {
+    aero: { name: 'Aero', color: '#49F4B2' },
+    electro: { name: 'Electro', color: '#A665DD' },
+    fusion: { name: 'Fusion', color: '#E58B66' },
+    glacio: { name: 'Glacio', color: '#5FBFF5' },
+    havoc: { name: 'Havoc', color: '#BE4B91' },
+    spectro: { name: 'Spectro', color: '#D9D383' }
+};
+const elementSelector = document.createElement('div');
+elementSelector.id = 'element-selector-popup';
+elementSelector.style.cssText = 'position:fixed;z-index:10001;background:#20202b;border:1px solid #4a4a5a;border-radius:8px;padding:5px;display:none;flex-wrap:wrap;gap:3px;width:124px;box-shadow:0 4px 20px rgba(0,0,0,0.5);';
+elementSelector.addEventListener('click', (e) => e.stopPropagation());
+document.body.appendChild(elementSelector);
+
+const workspaceWrapper = document.getElementById('workspace-wrapper');
+const workspacePlane = document.getElementById('workspace-plane');
+const zoomSlider = document.getElementById('zoom-slider');
+
+function markDirty() { isDirty = true; }
+window.addEventListener('beforeunload', (e) => {
+    if (isDirty) { e.preventDefault(); e.returnValue = 'Unsaved changes.'; }
+});
+
+// --- Settings ---
+document.getElementById('settings-btn').addEventListener('click', () => {
+    document.getElementById('settings-overlay').style.display = 'flex';
+});
+document.getElementById('settings-overlay').addEventListener('mousedown', (e) => {
+    if(e.target === document.getElementById('settings-overlay')) e.target.style.display = 'none';
+});
+document.getElementById('snap-grid-toggle').addEventListener('change', (e) => { snapToGrid = e.target.checked; });
+document.getElementById('show-names-toggle').addEventListener('change', (e) => {
+    if (e.target.checked) document.body.classList.remove('hide-names');
+    else document.body.classList.add('hide-names');
+});
+
+// --- Viewport Panning, Zooming & Anti-Void ---
+function updateTransform(smooth = false) {
+    workspacePlane.style.transition = smooth ? 'transform 0.3s ease-out' : 'none';
+    workspacePlane.style.transform = `scale(${zoomLevel}) translate(${panX}px, ${panY}px)`;
+}
+
+zoomSlider.addEventListener('input', (e) => {
+    zoomLevel = parseFloat(e.target.value);
+    updateTransform();
+});
+
+workspaceWrapper.addEventListener('wheel', (e) => {
+    e.preventDefault();
+    zoomLevel += e.deltaY * -0.001;
+    zoomLevel = Math.min(Math.max(0.4, zoomLevel), 2.5);
+    zoomSlider.value = zoomLevel;
+    updateTransform();
+});
+
+let isPanning = false;
+let startPanX = 0, startPanY = 0;
+
+workspaceWrapper.addEventListener('mousedown', (e) => {
+    if (e.target.closest('.team') || e.target.closest('.unit') || e.target.closest('.zoom-container')) return;
+    isPanning = true;
+    startPanX = e.clientX - (panX * zoomLevel);
+    startPanY = e.clientY - (panY * zoomLevel);
+});
+
+document.addEventListener('mousemove', (e) => {
+    if (!isPanning) return;
+    panX = (e.clientX - startPanX) / zoomLevel;
+    panY = (e.clientY - startPanY) / zoomLevel;
+    updateTransform();
+});
+
+document.addEventListener('mouseup', () => {
+    if (isPanning) {
+        isPanning = false;
+        enforceAntiVoid();
+    }
+});
+
+// Anti-Void Guardrail: Snaps back if all teams are completely off-screen
+function enforceAntiVoid() {
+    const teams = document.querySelectorAll('.team');
+    if (teams.length === 0) return;
+
+    const wrapperRect = workspaceWrapper.getBoundingClientRect();
+    let isAnyVisible = false;
+
+    teams.forEach(team => {
+        const rect = team.getBoundingClientRect();
+        if (rect.right > wrapperRect.left && rect.left < wrapperRect.right &&
+            rect.bottom > wrapperRect.top && rect.top < wrapperRect.bottom) {
+            isAnyVisible = true;
+        }
+    });
+
+    if (!isAnyVisible) {
+        panX = 0; panY = 0;
+        updateTransform(true);
+        setTimeout(() => updateTransform(false), 300);
+    }
+}
+
+// --- Resizer Logic ---
+const resizer = document.getElementById('resizer');
+const rosterPanel = document.getElementById('roster-panel');
+let isResizing = false;
+resizer.addEventListener('mousedown', () => { isResizing = true; document.body.style.cursor = 'ns-resize'; });
+document.addEventListener('mousemove', (e) => {
+    if (!isResizing) return;
+    let newHeight = window.innerHeight - e.clientY;
+    newHeight = Math.max(160, Math.min(newHeight, window.innerHeight - 100));
+    rosterPanel.style.height = newHeight + 'px';
+    workspaceWrapper.style.bottom = newHeight + 'px';
+});
+document.addEventListener('mouseup', () => { if (isResizing) { isResizing = false; document.body.style.cursor = 'default'; } });
+
+// --- Unified Loader (Images + JSON) ---
+document.getElementById('folder-input').addEventListener('change', (e) => {
+    const files = e.target.files;
+    if (!files.length) return;
+
+    const unsortedZone = document.getElementById('zone-unsorted');
+    let jsonFile = null;
+    let newImagesFound = false;
+
+    for (let file of files) {
+        if (file.name.match(/\.json$/i)) {
+            jsonFile = file;
+        } else if (file.name.match(/\.(png|jpe?g|gif|webp)$/i)) {
+            let rawName = file.name.replace(/\.[^/.]+$/, "");
+            let keyName = rawName.toLowerCase();
+            if (!imageCache[keyName]) {
+                imageCache[keyName] = { url: URL.createObjectURL(file), displayName: rawName };
+                newImagesFound = true;
+            }
+        }
+    }
+
+    if (jsonFile) {
+        const reader = new FileReader();
+        reader.onload = function(event) {
+            try {
+                const data = JSON.parse(event.target.result);
+
+                document.querySelectorAll('.team').forEach(t => t.remove());
+                document.querySelectorAll('.unit').forEach(u => u.remove());
+
+                for (const [zoneId, units] of Object.entries(data.roster)) {
+                    const zone = document.getElementById(zoneId);
+                    if (zone) {
+                        units.forEach(uData => {
+                            if (imageCache[uData.name]) {
+                                let uEl = createUnitElement(uData.name, imageCache[uData.name].displayName, imageCache[uData.name].url, zone);
+                                uEl.dataset.charges = uData.charges || "1";
+                                uEl.querySelector('.charge-badge').style.display = uEl.dataset.charges === "2" ? 'block' : 'none';
+                            }
+                        });
+                    }
+                }
+
+                data.teams.forEach(tData => {
+                    let team = createNewTeam(null, 0, 0, true);
+                    team.style.left = tData.x;
+                    team.style.top = tData.y;
+
+                    if (tData.name) {
+                        let label = team.querySelector('.team-name-label');
+                        if (label) label.textContent = tData.name;
+                    }
+                    if (tData.locked) toggleTeamLock(team, true);
+                    if (tData.element) applyElement(team, tData.element, tData.element2 || null);
+
+                    tData.units.forEach(uName => {
+                        if (imageCache[uName]) {
+                            createUnitElement(uName, imageCache[uName].displayName, imageCache[uName].url, team);
+                        }
+                    });
+                    updateTeamLayout(team);
+                });
+                if (data.hideNames) document.body.classList.add('hide-names');
+                else document.body.classList.remove('hide-names');
+                document.getElementById('show-names-toggle').checked = !data.hideNames;
+                if (data.snapToGrid !== undefined) snapToGrid = data.snapToGrid;
+                document.getElementById('snap-grid-toggle').checked = snapToGrid;
+                validateRosterAfterLoad();
+                loadImagesToUnsorted(unsortedZone);
+                isDirty = false;
+            } catch(err) {
+                alert("Error parsing JSON layout file. Creating unsorted units instead.");
+                loadImagesToUnsorted(unsortedZone);
+            }
+        };
+        reader.readAsText(jsonFile);
+    } else if (newImagesFound) {
+        loadImagesToUnsorted(unsortedZone);
+    }
+    e.target.value = '';
+});
+
+function loadImagesToUnsorted(zone) {
+    for (let [keyName, data] of Object.entries(imageCache)) {
+        if (!document.querySelector(`.unit[data-name="${keyName}"]`)) {
+            createUnitElement(keyName, data.displayName, data.url, zone);
+        }
+    }
+    sortAllZones();
+    markDirty();
+}
+
+function createUnitElement(id, displayName, iconUrl, targetNode) {
+    const unit = document.createElement('div');
+    unit.className = 'unit';
+    unit.dataset.name = id;
+    unit.dataset.charges = "1";
+
+    const icon = document.createElement('div');
+    icon.className = 'unit-icon';
+    icon.style.backgroundImage = `url('${iconUrl}')`;
+
+    const nameLabel = document.createElement('div');
+    nameLabel.className = 'unit-name';
+    nameLabel.textContent = displayName;
+
+    const badge = document.createElement('div');
+    badge.className = 'charge-badge';
+    badge.textContent = 'x2';
+
+    unit.appendChild(badge);
+    unit.appendChild(icon);
+    unit.appendChild(nameLabel);
+
+    if (targetNode) targetNode.appendChild(unit);
+    return unit;
+}
+
+function sortAllZones() {
+    document.querySelectorAll('.drop-zone').forEach(zone => {
+        Array.from(zone.querySelectorAll('div.unit'))
+            .sort((a, b) => a.dataset.name.localeCompare(b.dataset.name))
+            .forEach(node => zone.appendChild(node));
+    });
+}
+
+function validateRosterAfterLoad() {
+    const teamCounts = {};
+    document.querySelectorAll('.team .unit').forEach(unit => {
+        const name = unit.dataset.name;
+        teamCounts[name] = (teamCounts[name] || 0) + 1;
+    });
+    document.querySelectorAll('.drop-zone .unit').forEach(unit => {
+        const name = unit.dataset.name;
+        const inTeams = teamCounts[name] || 0;
+        const charges = parseInt(unit.dataset.charges || "1");
+        if (inTeams >= charges) {
+            unit.remove();
+        } else if (inTeams > 0) {
+            unit.dataset.charges = String(charges - inTeams);
+            if (unit.dataset.charges !== "2") {
+                unit.querySelector('.charge-badge').style.display = 'none';
+            }
+        }
+    });
+    sortAllZones();
+}
+
+function resetInlinePositions(parent) {
+    parent.querySelectorAll('.unit').forEach(el => {
+        el.style.left = ''; el.style.top = ''; el.style.right = ''; el.style.bottom = '';
+    });
+}
+
+// --- Map Client Coordinates to Workspace Plane Coordinates ---
+function getPlaneCoords(clientX, clientY) {
+    const wrapperRect = workspaceWrapper.getBoundingClientRect();
+    const planeOriginX = wrapperRect.left + (wrapperRect.width / 2);
+    const planeOriginY = wrapperRect.top + (wrapperRect.height / 2);
+
+    let x = (clientX - planeOriginX) / zoomLevel - panX;
+    let y = (clientY - planeOriginY) / zoomLevel - panY;
+    return {x, y};
+}
+
+// --- Drag, Drop, & Click Logic ---
+let draggingEl = null, originalParent = null, dragType = null;
+let dragOffsetX = 0, dragOffsetY = 0;
+let isDragMoved = false;
+
+document.addEventListener('mousedown', (e) => {
+    if (e.button !== 0 || isPanning) return;
+
+    let unitTarget = e.target.closest('div.unit');
+    let teamTarget = e.target.closest('.team');
+
+    if (unitTarget && unitTarget.closest('.team.locked')) {
+        unitTarget = null;
+    }
+
+    if (unitTarget) teamTarget = null;
+    isDragMoved = false;
+
+    if (unitTarget) {
+        draggingEl = unitTarget;
+        originalParent = draggingEl.parentElement;
+        dragType = 'unit';
+
+        const rect = draggingEl.getBoundingClientRect();
+        dragOffsetX = e.clientX - rect.left;
+        dragOffsetY = e.clientY - rect.top;
+
+        draggingEl.classList.add('dragging');
+        document.body.appendChild(draggingEl);
+        updateTeamLayout(originalParent);
+        updateUnitDragPos(e.clientX, e.clientY);
+    }
+    else if (teamTarget) {
+        draggingEl = teamTarget;
+        dragType = 'team';
+        const rect = draggingEl.getBoundingClientRect();
+        dragOffsetX = (e.clientX - rect.left) / zoomLevel;
+        dragOffsetY = (e.clientY - rect.top) / zoomLevel;
+    }
+});
+
+document.addEventListener('mousemove', (e) => {
+    if (!draggingEl) return;
+    isDragMoved = true;
+
+    if (dragType === 'unit') {
+        updateUnitDragPos(e.clientX, e.clientY);
+    } else if (dragType === 'team') {
+        draggingEl.classList.add('dragging-team');
+        let coords = getPlaneCoords(e.clientX, e.clientY);
+
+        let newX = coords.x - dragOffsetX;
+        let newY = coords.y - dragOffsetY;
+
+        if (snapToGrid) {
+            newX = Math.round(newX / 40) * 40;
+            newY = Math.round(newY / 40) * 40;
+        }
+        draggingEl.style.left = newX + 'px';
+        draggingEl.style.top = newY + 'px';
+    }
+});
+
+function updateUnitDragPos(x, y) {
+    draggingEl.style.left = (x - dragOffsetX) + 'px';
+    draggingEl.style.top = (y - dragOffsetY) + 'px';
+}
+
+document.addEventListener('mouseup', (e) => {
+    if (!draggingEl) return;
+
+    if (!isDragMoved) {
+        draggingEl.classList.remove('dragging', 'dragging-team');
+
+        if (dragType === 'unit' && originalParent.classList.contains('drop-zone')) {
+            let isDouble = draggingEl.dataset.charges === "2";
+            draggingEl.dataset.charges = isDouble ? "1" : "2";
+            draggingEl.querySelector('.charge-badge').style.display = isDouble ? 'none' : 'block';
+            originalParent.appendChild(draggingEl);
+            resetInlinePositions(originalParent);
+            sortAllZones();
+            markDirty();
+        }
+        else if (dragType === 'team') {
+            let edgeDist = 20;
+            let teamW = draggingEl.offsetWidth;
+            let teamH = draggingEl.offsetHeight;
+            if (dragOffsetX > (teamW - edgeDist) || dragOffsetY > (teamH - edgeDist)) {
+                toggleTeamLock(draggingEl);
+            }
+        }
+        else if (dragType === 'unit') {
+            originalParent.appendChild(draggingEl);
+            resetInlinePositions(originalParent);
+            updateTeamLayout(originalParent);
+        }
+        draggingEl = null; dragType = null; return;
+    }
+
+    draggingEl.classList.remove('dragging', 'dragging-team');
+
+    if (dragType === 'unit') {
+        draggingEl.style.display = 'none';
+        let elemBelow = document.elementFromPoint(e.clientX, e.clientY);
+        draggingEl.style.display = '';
+
+        let targetTeam = elemBelow ? elemBelow.closest('.team') : null;
+        let targetZone = elemBelow ? elemBelow.closest('.drop-zone') : null;
+        let isOverWorkspace = elemBelow ? elemBelow.closest('#workspace-wrapper') : false;
+
+        if (targetTeam && targetTeam.classList.contains('locked')) targetTeam = null;
+
+        let unitToPlace = draggingEl;
+
+        if (draggingEl.dataset.charges === "2" && originalParent.classList.contains('drop-zone') && (targetTeam || isOverWorkspace)) {
+            unitToPlace = draggingEl.cloneNode(true);
+            unitToPlace.dataset.charges = "1";
+            unitToPlace.querySelector('.charge-badge').style.display = 'none';
+
+            draggingEl.dataset.charges = "1";
+            draggingEl.querySelector('.charge-badge').style.display = 'none';
+            originalParent.appendChild(draggingEl);
+            resetInlinePositions(originalParent);
+            sortAllZones();
+        }
+
+        if (targetZone) {
+            let existingInRoster = targetZone.querySelector(`.unit[data-name="${unitToPlace.dataset.name}"]`);
+            if (existingInRoster && existingInRoster !== unitToPlace) {
+                unitToPlace.remove();
+            } else {
+                targetZone.appendChild(unitToPlace);
+                resetInlinePositions(targetZone);
+                sortAllZones();
+            }
+            markDirty();
+        }
+        else if (targetTeam && targetTeam.querySelectorAll('div.unit').length < 3) {
+            targetTeam.appendChild(unitToPlace);
+            resetInlinePositions(targetTeam);
+            updateTeamLayout(targetTeam);
+            markDirty();
+        }
+        else if (isOverWorkspace && !targetTeam) {
+            createNewTeam(unitToPlace, e.clientX, e.clientY);
+            markDirty();
+        }
+        else {
+            if (unitToPlace !== draggingEl) unitToPlace.remove();
+            originalParent.appendChild(draggingEl);
+            resetInlinePositions(originalParent);
+            updateTeamLayout(originalParent);
+        }
+
+        if (originalParent && originalParent.classList.contains('team') && originalParent.querySelectorAll('div.unit').length === 0) {
+            originalParent.remove();
+        }
+    } else {
+        markDirty();
+        enforceAntiVoid();
+    }
+    draggingEl = null; dragType = null;
+});
+
+function createNewTeam(unitNode, clientX, clientY, bypassPositioning = false) {
+    let newTeam = document.createElement('div');
+    newTeam.className = 'team';
+
+    let topBar = document.createElement('div');
+    topBar.className = 'team-topbar';
+
+    let elemBadge = document.createElement('div');
+    elemBadge.className = 'element-badge';
+    elemBadge.addEventListener('mousedown', (e) => {
+        if (e.button === 0) e.stopPropagation();
+    });
+    elemBadge.addEventListener('click', (e) => {
+        e.stopPropagation();
+        showElementSelector(elemBadge, newTeam);
+    });
+    topBar.appendChild(elemBadge);
+
+    function startRename(targetLabel) {
+        if (newTeam.classList.contains('locked')) return;
+        let input = document.createElement('input');
+        input.type = 'text';
+        input.value = targetLabel.textContent || "";
+        input.style.cssText = 'width:100%;background:transparent;border:none;outline:none;color:#e0e0e0;font:inherit;text-align:center;padding:0;';
+        targetLabel.style.display = 'none';
+        targetLabel.parentNode.insertBefore(input, targetLabel);
+        input.focus();
+        input.select();
+        let finish = () => {
+            let val = input.value.trim();
+            targetLabel.textContent = val || "";
+            targetLabel.style.display = '';
+            input.remove();
+            markDirty();
+        };
+        input.addEventListener('blur', finish);
+        input.addEventListener('keydown', (ev) => {
+            if (ev.key === 'Enter') { ev.preventDefault(); input.blur(); }
+            if (ev.key === 'Escape') { ev.preventDefault(); targetLabel.textContent = targetLabel.textContent || ""; targetLabel.style.display = ''; input.remove(); }
+        });
+    }
+    let nameLabel = document.createElement('span');
+    nameLabel.className = 'team-name-label';
+    nameLabel.addEventListener('mousedown', (e) => {
+        if (e.button === 0) e.stopPropagation();
+    });
+    nameLabel.addEventListener('click', (e) => {
+        e.stopPropagation();
+        startRename(nameLabel);
+    });
+    topBar.appendChild(nameLabel);
+
+    let lockIcon = document.createElement('div');
+    lockIcon.className = 'lock-indicator';
+    lockIcon.innerHTML = '🔒';
+    lockIcon.addEventListener('mousedown', (e) => {
+        if (e.button === 0) e.stopPropagation();
+    });
+    lockIcon.addEventListener('click', (e) => {
+        e.stopPropagation();
+        toggleTeamLock(newTeam);
+    });
+    topBar.appendChild(lockIcon);
+
+    newTeam.appendChild(topBar);
+
+    if (!bypassPositioning) {
+        let coords = getPlaneCoords(clientX, clientY);
+        let x = coords.x - 135;
+        let y = coords.y - 45;
+
+        if (snapToGrid) {
+            x = Math.round(x / 40) * 40;
+            y = Math.round(y / 40) * 40;
+        }
+        newTeam.style.left = x + 'px';
+        newTeam.style.top = y + 'px';
+    }
+
+    if (unitNode) {
+        newTeam.appendChild(unitNode);
+        resetInlinePositions(newTeam);
+    }
+
+    workspacePlane.appendChild(newTeam);
+    updateTeamLayout(newTeam);
+    return newTeam;
+}
+
+function updateTeamLayout(container) {
+    if (container && container.classList.contains('team')) {
+        container.dataset.count = container.querySelectorAll('div.unit').length;
+    }
+}
+
+function toggleTeamLock(team, forceState = null) {
+    let isLocked = forceState !== null ? forceState : !team.classList.contains('locked');
+    if (isLocked) {
+        team.classList.add('locked');
+    } else {
+        team.classList.remove('locked');
+    }
+    markDirty();
+}
+
+// --- Element Selection ---
+function showElementSelector(badge, team) {
+    const popup = document.getElementById('element-selector-popup');
+    const rect = badge.getBoundingClientRect();
+    popup.style.left = (rect.left - 50) + 'px';
+    popup.style.top = (rect.bottom + 4) + 'px';
+    popup.innerHTML = '';
+
+    for (const [key, elem] of Object.entries(ELEMENTS)) {
+        const opt = document.createElement('div');
+        opt.className = 'element-option';
+        opt.dataset.element = key;
+        opt.style.background = elem.color;
+        opt.title = elem.name;
+        opt.addEventListener('click', (e) => {
+            e.stopPropagation();
+            const primary = team.dataset.element;
+            const secondary = team.dataset.element2;
+            if (key === primary) {
+                if (secondary) { applyElement(team, secondary, null); }
+                else { applyElement(team, null, null); }
+            } else if (key === secondary) {
+                applyElement(team, primary, null);
+            } else if (!primary) {
+                applyElement(team, key, null);
+            } else {
+                applyElement(team, primary, key);
+            }
+            popup.style.display = 'none';
+        });
+        popup.appendChild(opt);
+    }
+
+    popup.querySelectorAll('.element-option').forEach(opt => {
+        const k = opt.dataset.element;
+        if (k === team.dataset.element) opt.style.borderColor = '#fff';
+        else if (k === team.dataset.element2) opt.style.borderColor = '#888';
+        else opt.style.borderColor = 'transparent';
+    });
+    popup.style.display = 'flex';
+}
+
+function applyElement(team, elementKey, elementKey2) {
+    team.classList.remove('has-element');
+    team.style.removeProperty('--elem-grad');
+    delete team.dataset.element;
+    delete team.dataset.element2;
+    const badge = team.querySelector('.element-badge');
+    if (elementKey) {
+        const c1 = ELEMENTS[elementKey].color;
+        const c2 = elementKey2 ? ELEMENTS[elementKey2].color : c1;
+        team.dataset.element = elementKey;
+        if (elementKey2) team.dataset.element2 = elementKey2;
+        team.style.setProperty('--elem-grad', `linear-gradient(to right, ${c1} 50%, ${c2} 50%)`);
+        team.classList.add('has-element');
+        badge.style.background = c1;
+        badge.classList.add('has-element');
+    } else {
+        badge.style.background = '';
+        badge.classList.remove('has-element');
+    }
+    markDirty();
+}
+
+document.addEventListener('click', (e) => {
+    const popup = document.getElementById('element-selector-popup');
+    if (popup.style.display === 'flex' && !e.target.closest('#element-selector-popup') && !e.target.closest('.element-badge')) {
+        popup.style.display = 'none';
+    }
+});
+
+// --- Spacebar Search ---
+const searchOverlay = document.getElementById('search-overlay');
+const searchInput = document.getElementById('search-input');
+
+document.addEventListener('keydown', (e) => {
+    if (e.code === 'Space' && e.target.tagName !== 'INPUT' && document.activeElement.tagName !== 'INPUT') {
+        e.preventDefault();
+        searchOverlay.style.display = 'flex';
+        searchInput.focus();
+    }
+    if (e.code === 'Escape' && searchOverlay.style.display === 'flex') {
+        searchOverlay.style.display = 'none'; searchInput.value = '';
+    }
+});
+
+searchInput.addEventListener('keydown', (e) => {
+    if (e.code === 'Enter') {
+        buildTeamFromSearch(searchInput.value);
+        searchOverlay.style.display = 'none'; searchInput.value = '';
+    }
+});
+
+function buildTeamFromSearch(query) {
+    if (!query.trim()) return;
+    let words = query.toLowerCase().split(/\s+/).slice(0, 3);
+    let unitsFound = [];
+
+    words.forEach(word => {
+        let allUnits = Array.from(document.querySelectorAll('.unit'));
+        let match = allUnits.find(u => u.dataset.name.startsWith(word) && u.parentElement.classList.contains('drop-zone'));
+
+        if (match) {
+            let oldParent = match.parentElement;
+            let unitToUse = match;
+
+            if (match.dataset.charges === "2") {
+                unitToUse = match.cloneNode(true);
+                unitToUse.dataset.charges = "1";
+                unitToUse.querySelector('.charge-badge').style.display = 'none';
+                match.dataset.charges = "1";
+                match.querySelector('.charge-badge').style.display = 'none';
+            }
+
+            unitsFound.push(unitToUse);
+        }
+    });
+
+    if (unitsFound.length > 0) {
+        let cascadeOffset = (searchSpawnCounter % 6) * 40;
+
+        const wrapperRect = workspaceWrapper.getBoundingClientRect();
+        let mockEventX = wrapperRect.left + (wrapperRect.width / 2) + cascadeOffset;
+        let mockEventY = wrapperRect.top + (wrapperRect.height / 2) + cascadeOffset;
+
+        let team = createNewTeam(unitsFound[0], mockEventX, mockEventY);
+        for (let i = 1; i < unitsFound.length; i++) {
+            team.appendChild(unitsFound[i]);
+            resetInlinePositions(team);
+        }
+        updateTeamLayout(team);
+        searchSpawnCounter++;
+        markDirty();
+    }
+}
+
+// --- JSON Save ---
+document.getElementById('save-btn').addEventListener('click', () => {
+    let data = { teams: [], roster: {}, hideNames: document.body.classList.contains('hide-names'), snapToGrid };
+
+    document.querySelectorAll('.team').forEach(team => {
+        let units = Array.from(team.querySelectorAll('.unit')).map(u => u.dataset.name);
+        let label = team.querySelector('.team-name-label');
+        data.teams.push({
+            name: label ? label.textContent : "",
+            x: team.style.left, y: team.style.top,
+            locked: team.classList.contains('locked'),
+            element: team.dataset.element || "",
+            element2: team.dataset.element2 || "",
+            units: units
+        });
+    });
+
+    document.querySelectorAll('.drop-zone').forEach(zone => {
+        data.roster[zone.id] = Array.from(zone.querySelectorAll('.unit')).map(u => ({
+            name: u.dataset.name,
+            charges: u.dataset.charges
+        }));
+    });
+
+    const blob = new Blob([JSON.stringify(data, null, 2)], {type: 'application/json'});
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'matrix_teams_layout.json';
+    a.click();
+    URL.revokeObjectURL(url);
+    isDirty = false;
+});
