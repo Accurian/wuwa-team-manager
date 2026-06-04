@@ -53,6 +53,8 @@ A drag-and-drop team composition manager for Wuthering Waves. Build teams, assig
 - **Row Alignment** — left / center / right (default: center)
 - **Rover Icon** — Male / Female (default: Male)
 
+> **Disclaimer**: This project was entirely vibe-coded — no guarantees, no QA, use at your own risk.
+
 ## Deployment
 
 Static site — no backend required. Deploy to Vercel, Netlify, GitHub Pages, or any static host. A `vercel.json` is included for Vercel.
