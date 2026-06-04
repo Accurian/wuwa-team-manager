@@ -1352,26 +1352,15 @@ document.getElementById('save-btn').addEventListener('click', () => {
 let lastSyncTime = 0;
 const SYNC_COOLDOWN = 30000;
 document.getElementById('sync-btn').addEventListener('click', async () => {
+    const btn = document.getElementById('sync-btn');
     const now = Date.now();
     if (now - lastSyncTime < SYNC_COOLDOWN) {
         const remaining = Math.ceil((SYNC_COOLDOWN - (now - lastSyncTime)) / 1000);
-        const btn = document.getElementById('sync-btn');
-        btn.title = `Wait ${remaining}s`;
-        btn.style.borderColor = '#e67e22';
-        setTimeout(() => {
-            btn.title = 'Sync to Cloud';
-            btn.style.borderColor = currentUser ? '#2ecc71' : '#4a4a5a';
-        }, 1500);
+        showSyncNotification(btn, `Wait ${remaining}s`, '#e67e22');
         return;
     }
     if (!currentUser) {
-        const btn = document.getElementById('sync-btn');
-        btn.title = 'Login first';
-        btn.style.borderColor = '#e74c3c';
-        setTimeout(() => {
-            btn.title = 'Sync to Cloud';
-            btn.style.borderColor = '#4a4a5a';
-        }, 2000);
+        showSyncNotification(btn, 'Login first', '#e74c3c');
         return;
     }
 
@@ -1384,8 +1373,25 @@ document.getElementById('sync-btn').addEventListener('click', async () => {
 
     btn.title = 'Synced!';
     btn.style.borderColor = '#2ecc71';
+    showSyncNotification(btn, 'Synced!');
     setTimeout(() => {
         btn.title = 'Sync to Cloud';
-        btn.style.borderColor = '#2ecc71';
     }, 2000);
 });
+
+function showSyncNotification(anchor, text, color = '#2ecc71') {
+    const existing = document.querySelector('.sync-notification');
+    if (existing) existing.remove();
+
+    const rect = anchor.getBoundingClientRect();
+    const note = document.createElement('div');
+    note.className = 'sync-notification';
+    note.textContent = text;
+    note.style.cssText = `position:fixed;top:${rect.bottom + 6}px;right:${document.querySelector('.controls').getBoundingClientRect().right - rect.right}px;background:${color};color:#fff;font-size:12px;padding:4px 10px;border-radius:4px;z-index:9999;opacity:0;transition:opacity 0.3s;pointer-events:none;`;
+    document.body.appendChild(note);
+    requestAnimationFrame(() => note.style.opacity = '1');
+    setTimeout(() => {
+        note.style.opacity = '0';
+        setTimeout(() => note.remove(), 300);
+    }, 2000);
+}
