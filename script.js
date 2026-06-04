@@ -376,6 +376,8 @@ document.getElementById('json-input').addEventListener('change', (e) => {
 
 function loadImagesToUnsorted(zone) {
     for (let [keyName, data] of Object.entries(imageCache)) {
+        if (keyName === 'rover(male)' && roverGender !== 'male') continue;
+        if (keyName === 'rover(female)' && roverGender !== 'female') continue;
         if (!document.querySelector(`.unit[data-name="${keyName}"]`)) {
             createUnitElement(keyName, data.displayName, data.url, zone);
         }
