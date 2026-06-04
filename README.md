@@ -9,7 +9,7 @@ https://wuwa-team-manager.vercel.app/
 - **Missing a character?** Press the upload button to select a folder with `.png` icon files. Name your .png accordingly!
 
 ## Account Features
-- Create an account to use the cloud sync feature which allows you to sync up to **10 custom `.png` icons** (50KB max per icon)
+- Create an account to use the cloud sync feature which allows you to sync up to **10 custom `.png` icons** (≤50KB per icon)
 
 ## Deployment
 
