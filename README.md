@@ -1,12 +1,11 @@
-# Endstate Matrix — Wuthering Waves Team Manager
+# Wuthering Waves Team Manager (for Endstate Matrix)
 
-A drag-and-drop team composition manager for Wuthering Waves. Build teams, assign elements, organize by role, and save/load your layouts.
+A team building manager for Wuthering Waves. Build teams using this website!
 
 ## Features
 
 ### Adding Characters
-- **Bundled characters** are auto-loaded from `characters.json` on page start
-- **Upload Icons** button (top toolbar, folder icon) — select a folder of `.png` images. Each file becomes a character in the Unsorted zone using the filename (without extension) as the name. Supports `webkitdirectory` for batch folder upload
+- **Upload Icons** button (top toolbar, upload icon) — select a folder of `.png` images. Each file becomes a character in the Unsorted zone using the filename (without extension) as the name. Supports `webkitdirectory` for batch folder upload
 - **Spacebar** — opens the search overlay. Type character names and press Enter to instantly create a team with those units. Names autocomplete from loaded icons
 
 ### Building Teams
