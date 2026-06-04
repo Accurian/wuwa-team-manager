@@ -115,9 +115,13 @@
     <div id="auth-overlay" class="overlay">
         <div class="modal" style="max-width:360px;">
             <h2 id="auth-title">Login</h2>
+            <div class="setting-row" id="auth-username-row" style="display:none;">
+                <label>Username</label>
+                <input type="text" id="auth-username" placeholder="choose a username" style="background:#2a2a35;color:#e0e0e0;border:1px solid #4a4a5a;border-radius:4px;padding:4px 6px;outline:none;width:180px;">
+            </div>
             <div class="setting-row">
-                <label>Email</label>
-                <input type="email" id="auth-email" placeholder="your@email.com" style="background:#2a2a35;color:#e0e0e0;border:1px solid #4a4a5a;border-radius:4px;padding:4px 6px;outline:none;width:180px;">
+                <label>Email / Username</label>
+                <input type="text" id="auth-email" placeholder="email or username" style="background:#2a2a35;color:#e0e0e0;border:1px solid #4a4a5a;border-radius:4px;padding:4px 6px;outline:none;width:180px;">
             </div>
             <div class="setting-row">
                 <label>Password</label>

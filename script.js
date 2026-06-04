@@ -109,36 +109,58 @@ document.getElementById('auth-toggle-btn').addEventListener('click', () => {
     document.getElementById('auth-title').textContent = authMode === 'login' ? 'Login' : 'Register';
     document.getElementById('auth-submit').textContent = authMode === 'login' ? 'Login' : 'Register';
     document.getElementById('auth-toggle-btn').textContent = authMode === 'login' ? 'Register instead' : 'Login instead';
+    document.getElementById('auth-username-row').style.display = authMode === 'register' ? '' : 'none';
+    document.getElementById('auth-email').placeholder = authMode === 'login' ? 'email or username' : 'your@email.com';
     document.getElementById('auth-error').style.display = 'none';
     document.getElementById('auth-success').style.display = 'none';
 });
 
 document.getElementById('auth-submit').addEventListener('click', async () => {
-    const email = document.getElementById('auth-email').value.trim();
+    const input = document.getElementById('auth-email').value.trim();
     const password = document.getElementById('auth-password').value;
+    const username = document.getElementById('auth-username').value.trim();
     const errorEl = document.getElementById('auth-error');
     const successEl = document.getElementById('auth-success');
     errorEl.style.display = 'none';
     successEl.style.display = 'none';
 
-    if (!email || !password) {
-        errorEl.textContent = 'Please enter email and password.';
-        errorEl.style.display = 'block';
-        return;
-    }
-    if (password.length < 6) {
-        errorEl.textContent = 'Password must be at least 6 characters.';
-        errorEl.style.display = 'block';
-        return;
-    }
-
     try {
         if (authMode === 'login') {
+            if (!input || !password) {
+                errorEl.textContent = 'Please enter email/username and password.';
+                errorEl.style.display = 'block';
+                return;
+            }
+            let email = input;
+            if (!input.includes('@')) {
+                const { data: resolved, error: resolveErr } = await supabaseClient.rpc('get_email_by_username', { username_param: input });
+                if (resolveErr || !resolved) throw new Error('Username not found');
+                email = resolved;
+            }
             const { data, error } = await supabaseClient.auth.signInWithPassword({ email, password });
             if (error) throw error;
             document.getElementById('auth-overlay').style.display = 'none';
         } else {
-            const { data, error } = await supabaseClient.auth.signUp({ email, password });
+            if (!username) {
+                errorEl.textContent = 'Please choose a username.';
+                errorEl.style.display = 'block';
+                return;
+            }
+            if (!input || !input.includes('@')) {
+                errorEl.textContent = 'Please enter a valid email address.';
+                errorEl.style.display = 'block';
+                return;
+            }
+            if (password.length < 6) {
+                errorEl.textContent = 'Password must be at least 6 characters.';
+                errorEl.style.display = 'block';
+                return;
+            }
+            const { data, error } = await supabaseClient.auth.signUp({
+                email: input,
+                password,
+                options: { data: { username } }
+            });
             if (error) throw error;
             successEl.textContent = 'Registered! Check your email to confirm, or try logging in.';
             successEl.style.display = 'block';
