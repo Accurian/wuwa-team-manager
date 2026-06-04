@@ -1,3 +1,9 @@
+// --- Supabase ---
+const SUPABASE_URL = 'https://wbvhtwzfazjmfsdjbxkf.supabase.co';
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Indidmh0d3pmYXpqbWZzZGpieGtmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA1ODkxNDIsImV4cCI6MjA5NjE2NTE0Mn0.cmaMMeB8tDEdGan98v5qWVb6SJLqcySUTDvqR1I-G5c';
+const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+let currentUser = null;
+
 // --- Core State & Viewport Mapping ---
 let zoomLevel = 1;
 let panX = 0, panY = 0;
@@ -59,6 +65,206 @@ function applyRoverGender() {
         u.dataset.name = genderKey;
         u.querySelector('.unit-icon').style.backgroundImage = `url('${ref.url}')`;
     });
+}
+
+// --- Auth ---
+async function checkSession() {
+    const { data: { session } } = await supabase.auth.getSession();
+    currentUser = session?.user || null;
+    updateUserUI();
+}
+
+function updateUserUI() {
+    const btn = document.getElementById('user-btn');
+    if (currentUser) {
+        btn.title = currentUser.email;
+        btn.innerHTML = '<svg viewBox="0 0 24 24"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>';
+        btn.style.borderColor = '#2ecc71';
+    } else {
+        btn.title = 'Login';
+        btn.innerHTML = '<svg viewBox="0 0 24 24"><path d="M11 7L9.6 8.4l2.6 2.6H2v2h10.2l-2.6 2.6L11 17l5-5-5-5zm9 12h-8v2h8c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2h-8v2h8v14z"/></svg>';
+        btn.style.borderColor = '#4a4a5a';
+    }
+}
+
+let authMode = 'login';
+document.getElementById('user-btn').addEventListener('click', () => {
+    if (currentUser) {
+        supabase.auth.signOut();
+    } else {
+        document.getElementById('auth-overlay').style.display = 'flex';
+    }
+});
+
+document.getElementById('auth-overlay').addEventListener('mousedown', (e) => {
+    if (e.target === document.getElementById('auth-overlay')) {
+        e.target.style.display = 'none';
+        document.getElementById('auth-error').style.display = 'none';
+        document.getElementById('auth-success').style.display = 'none';
+    }
+});
+
+document.getElementById('auth-toggle-btn').addEventListener('click', () => {
+    authMode = authMode === 'login' ? 'register' : 'login';
+    document.getElementById('auth-title').textContent = authMode === 'login' ? 'Login' : 'Register';
+    document.getElementById('auth-submit').textContent = authMode === 'login' ? 'Login' : 'Register';
+    document.getElementById('auth-toggle-btn').textContent = authMode === 'login' ? 'Register instead' : 'Login instead';
+    document.getElementById('auth-error').style.display = 'none';
+    document.getElementById('auth-success').style.display = 'none';
+});
+
+document.getElementById('auth-submit').addEventListener('click', async () => {
+    const email = document.getElementById('auth-email').value.trim();
+    const password = document.getElementById('auth-password').value;
+    const errorEl = document.getElementById('auth-error');
+    const successEl = document.getElementById('auth-success');
+    errorEl.style.display = 'none';
+    successEl.style.display = 'none';
+
+    if (!email || !password) {
+        errorEl.textContent = 'Please enter email and password.';
+        errorEl.style.display = 'block';
+        return;
+    }
+    if (password.length < 6) {
+        errorEl.textContent = 'Password must be at least 6 characters.';
+        errorEl.style.display = 'block';
+        return;
+    }
+
+    try {
+        if (authMode === 'login') {
+            const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+            if (error) throw error;
+            document.getElementById('auth-overlay').style.display = 'none';
+        } else {
+            const { data, error } = await supabase.auth.signUp({ email, password });
+            if (error) throw error;
+            successEl.textContent = 'Registered! Check your email to confirm, or try logging in.';
+            successEl.style.display = 'block';
+        }
+    } catch (err) {
+        errorEl.textContent = err.message;
+        errorEl.style.display = 'block';
+    }
+});
+
+// Allow Enter key to submit
+document.getElementById('auth-password').addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') document.getElementById('auth-submit').click();
+});
+
+let initialLoadDone = false;
+supabase.auth.onAuthStateChange((event, session) => {
+    currentUser = session?.user || null;
+    updateUserUI();
+    if (currentUser && !initialLoadDone) {
+        initialLoadDone = true;
+        cloudLoad();
+    }
+});
+
+// --- Cloud Save ---
+async function cloudSave(saveData) {
+    if (!currentUser) return;
+    try {
+        const { data: existing } = await supabase.from('saves').select('id').eq('user_id', currentUser.id).maybeSingle();
+        if (existing) {
+            await supabase.from('saves').update({ data: saveData, updated_at: new Date().toISOString() }).eq('id', existing.id);
+        } else {
+            await supabase.from('saves').insert({ user_id: currentUser.id, data: saveData });
+        }
+    } catch (err) {
+        console.error('Cloud save failed:', err);
+    }
+}
+
+async function cloudLoad() {
+    if (!currentUser) return;
+    try {
+        const { data, error } = await supabase.from('saves').select('data').eq('user_id', currentUser.id).maybeSingle();
+        if (error) throw error;
+        if (data?.data) {
+            applySaveData(data.data);
+        }
+    } catch (err) {
+        console.error('Cloud load failed:', err);
+    }
+}
+
+function applySaveData(data) {
+    document.querySelectorAll('.team').forEach(t => t.remove());
+    document.querySelectorAll('.unit').forEach(u => u.remove());
+
+    for (const [zoneId, units] of Object.entries(data.roster)) {
+        const zone = document.getElementById(zoneId);
+        if (zone) {
+            units.forEach(uData => {
+                if (imageCache[uData.name]) {
+                    let uEl = createUnitElement(uData.name, imageCache[uData.name].displayName, imageCache[uData.name].url, zone);
+                    uEl.dataset.charges = uData.charges || "1";
+                    uEl.querySelector('.charge-badge').style.display = uEl.dataset.charges === "2" ? 'block' : 'none';
+                }
+            });
+        }
+    }
+
+    if (data.layoutMode) { layoutMode = data.layoutMode; document.getElementById('layout-mode-select').value = layoutMode; }
+    if (data.rowDirection) { applyRowDirection(data.rowDirection); document.getElementById('row-direction-select').value = data.rowDirection; }
+    if (data.rowAlign) { applyRowAlign(data.rowAlign); document.getElementById('row-align-select').value = data.rowAlign; }
+    updateRowSettingsVisibility();
+    if (layoutMode === 'rows') {
+        switchLayoutMode('rows');
+        if (data.rows) {
+            document.querySelectorAll('.row').forEach((row, i) => {
+                if (data.rows[i] && data.rows[i].element) {
+                    applyRowElement(row, data.rows[i].element);
+                }
+            });
+        }
+    }
+    data.teams.forEach(tData => {
+        let team = createNewTeam(null, 0, 0, true);
+        if (layoutMode !== 'rows') {
+            team.style.left = tData.x;
+            team.style.top = tData.y;
+        }
+
+        if (tData.name) {
+            let label = team.querySelector('.team-name-label');
+            if (label) label.textContent = tData.name;
+        }
+        if (tData.locked) toggleTeamLock(team, true);
+        if (tData.element) {
+            applyElement(team, tData.element, tData.element2 || null);
+            if (layoutMode === 'rows') {
+                let r = ROWS_CONTAINER.querySelector(`.row[data-element="${tData.element}"]`) || ROWS_CONTAINER.firstElementChild;
+                if (r) r.querySelector('.row-body').appendChild(team);
+            }
+        }
+
+        tData.units.forEach(uData => {
+            let uName = typeof uData === 'string' ? uData : uData.name;
+            if (imageCache[uName]) {
+                let uEl = createUnitElement(uName, imageCache[uName].displayName, imageCache[uName].url, team);
+                let charges = typeof uData === 'string' ? "1" : (uData.charges || "1");
+                uEl.dataset.charges = charges;
+                uEl.querySelector('.charge-badge').style.display = charges === "2" ? 'block' : 'none';
+            }
+        });
+        updateTeamLayout(team);
+    });
+    if (data.hideNames) document.body.classList.add('hide-names');
+    else document.body.classList.remove('hide-names');
+    document.getElementById('show-names-toggle').checked = !data.hideNames;
+    if (data.snapToGrid !== undefined) snapToGrid = data.snapToGrid;
+    document.getElementById('snap-grid-toggle').checked = snapToGrid;
+    if (data.roverGender) { roverGender = data.roverGender; document.getElementById('rover-gender-select').value = roverGender; }
+    document.getElementById('row-direction-row').style.display = layoutMode === 'rows' ? '' : 'none';
+    validateRosterAfterLoad();
+    loadImagesToUnsorted(document.getElementById('zone-unsorted'));
+    applyRoverGender();
+    isDirty = false;
 }
 
 const ELEMENT_KEYS = ['aero', 'electro', 'spectro', 'fusion', 'glacio', 'havoc'];
@@ -234,6 +440,7 @@ if (layoutMode === 'rows') switchLayoutMode('rows');
 applyRowDirection(rowDirection);
 applyRowAlign(rowAlign);
 document.body.classList.add('hide-names');
+checkSession();
 
 // --- Viewport Panning, Zooming & Anti-Void ---
 function updateTransform(smooth = false) {
@@ -1106,4 +1313,6 @@ document.getElementById('save-btn').addEventListener('click', () => {
     a.click();
     URL.revokeObjectURL(url);
     isDirty = false;
+
+    cloudSave(data);
 });
