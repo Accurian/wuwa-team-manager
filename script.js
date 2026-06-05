@@ -870,14 +870,24 @@ function createUnitElement(id, displayName, iconUrl, targetNode) {
 }
 
 function sortAllZones() {
+    const unownedZone = document.getElementById('zone-unowned');
+    const unsortedZone = document.getElementById('zone-unsorted');
+
     document.querySelectorAll('.drop-zone').forEach(zone => {
+        Array.from(zone.querySelectorAll('div.unit')).forEach(u => {
+            const isUnowned = u.dataset.unowned === "true";
+            if (isUnowned && zone !== unownedZone) {
+                unownedZone.appendChild(u);
+            } else if (!isUnowned && zone === unownedZone) {
+                unsortedZone.appendChild(u);
+            }
+        });
+    });
+
+    [unsortedZone, unownedZone, document.getElementById('zone-main'), document.getElementById('zone-sub'), document.getElementById('zone-support')].forEach(zone => {
+        if (!zone) return;
         Array.from(zone.querySelectorAll('div.unit'))
-            .sort((a, b) => {
-                const aUnowned = a.dataset.unowned === "true";
-                const bUnowned = b.dataset.unowned === "true";
-                if (aUnowned !== bUnowned) return aUnowned ? 1 : -1;
-                return a.dataset.name.localeCompare(b.dataset.name);
-            })
+            .sort((a, b) => a.dataset.name.localeCompare(b.dataset.name))
             .forEach(node => zone.appendChild(node));
     });
 }
