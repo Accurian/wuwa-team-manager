@@ -510,6 +510,24 @@ body.matrix-row-direction-horizontal .matrix-boss-row {
 }
 .matrix-boss-row .boss-topbar .boss-delete-btn:hover { background: rgba(120,30,30,0.9); color: #faa; }
 
+.matrix-boss-row .boss-body {
+    min-height: 200px; padding: 8px; border-radius: 0 0 8px 8px;
+    display: flex; flex-wrap: wrap; gap: 10px; align-content: flex-start;
+    border-top: 1px dashed #3a3a45;
+}
+.matrix-boss-row .boss-body .team {
+    position: relative; flex-shrink: 0; cursor: grab;
+}
+.matrix-boss-row .boss-body .team:active { cursor: grabbing; }
+.matrix-boss-row .boss-body:empty::after {
+    content: 'Drop teams here'; display: block;
+    width: 100%; text-align: center; color: #555; font-size: 12px;
+    padding: 40px 0; pointer-events: none;
+}
+body.matrix-row-direction-horizontal .matrix-boss-row .boss-body {
+    flex-direction: column; flex-wrap: nowrap;
+}
+
 /* Search mode (before boss is selected) */
 .matrix-boss-row .boss-search-wrap {
     position: relative; min-height: 28px; max-width: 280px;

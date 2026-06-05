@@ -113,6 +113,7 @@ const matrixGrid = document.getElementById('matrix-grid');
 function moveTeamsToMatrix() {
     const grid = document.getElementById('matrix-grid');
     grid.innerHTML = '';
+    document.querySelectorAll('.matrix-boss-row .boss-body').forEach(b => b.innerHTML = '');
     document.querySelectorAll('.team').forEach(team => {
         const clone = team.cloneNode(true);
         clone.querySelectorAll('.unit').forEach(u => {
@@ -125,8 +126,12 @@ function moveTeamsToMatrix() {
 
 function moveTeamsFromMatrix() {
     const grid = document.getElementById('matrix-grid');
+    const allMatrixTeams = [
+        ...grid.querySelectorAll('.team'),
+        ...document.querySelectorAll('.matrix-boss-row .boss-body > .team')
+    ];
     document.querySelectorAll('.team').forEach(t => t.remove());
-    grid.querySelectorAll('.team').forEach(team => {
+    allMatrixTeams.forEach(team => {
         const units = team.querySelectorAll('.unit');
         const targetRow = layoutMode === 'rows'
             ? (team.dataset.element
@@ -689,7 +694,11 @@ function buildRows() {
         label.textContent = '—';
         topbar.appendChild(label);
 
-        row.appendChild(topbar);
+    row.appendChild(topbar);
+
+    const bossBody = document.createElement('div');
+    bossBody.className = 'boss-body';
+    row.appendChild(bossBody);
 
         let body = document.createElement('div');
         body.className = 'row-body';
@@ -1474,24 +1483,43 @@ document.addEventListener('mouseup', (e) => {
         if (originalParent && originalParent.classList.contains('team') && originalParent.querySelectorAll('div.unit').length === 0) {
             originalParent.remove();
         }
-    } else if (dragType === 'team' && layoutMode === 'rows') {
+    } else if (dragType === 'team') {
         draggingEl.style.position = '';
         draggingEl.style.left = '';
         draggingEl.style.top = '';
         draggingEl.style.zIndex = '';
-        draggingEl.style.display = 'none';
-        let below = document.elementFromPoint(e.clientX, e.clientY);
-        draggingEl.style.display = '';
-        let targetRow = below ? below.closest('.row') : null;
-        if (targetRow && targetRow !== originalRow) {
-            targetRow.querySelector('.row-body').appendChild(draggingEl);
-            resetInlinePositions(draggingEl);
-            if (targetRow.dataset.element) {
-                applyElement(draggingEl, targetRow.dataset.element, null);
+        if (document.body.classList.contains('mode-matrix')) {
+            draggingEl.style.display = 'none';
+            let below = document.elementFromPoint(e.clientX, e.clientY);
+            draggingEl.style.display = '';
+            let targetBossRow = below ? below.closest('.matrix-boss-row') : null;
+            if (targetBossRow) {
+                let body = targetBossRow.querySelector('.boss-body');
+                if (body) {
+                    body.appendChild(draggingEl);
+                    resetInlinePositions(draggingEl);
+                }
+            } else {
+                document.getElementById('matrix-grid').appendChild(draggingEl);
             }
+            markDirty();
+        } else if (layoutMode === 'rows') {
+            draggingEl.style.display = 'none';
+            let below = document.elementFromPoint(e.clientX, e.clientY);
+            draggingEl.style.display = '';
+            let targetRow = below ? below.closest('.row') : null;
+            if (targetRow && targetRow !== originalRow) {
+                targetRow.querySelector('.row-body').appendChild(draggingEl);
+                resetInlinePositions(draggingEl);
+                if (targetRow.dataset.element) {
+                    applyElement(draggingEl, targetRow.dataset.element, null);
+                }
+            }
+            markDirty();
+        } else {
+            markDirty();
+            enforceAntiVoid();
         }
-        markDirty();
-    } else if (dragType === 'row') {
         draggingEl.style.position = '';
         draggingEl.style.left = '';
         draggingEl.style.top = '';
