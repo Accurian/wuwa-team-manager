@@ -115,14 +115,24 @@ function moveTeamsToMatrix() {
     matrixBaseBosses = [];
     const grid = document.getElementById('matrix-grid');
     grid.innerHTML = '';
-    document.querySelectorAll('.matrix-boss-row .boss-body').forEach(b => b.innerHTML = '');
+    const bossRows = document.querySelectorAll('#matrix-rows > .matrix-boss-row');
     document.querySelectorAll('.team').forEach(team => {
-        const clone = team.cloneNode(true);
-        clone.querySelectorAll('.unit').forEach(u => {
-            const cb = u.querySelector('.charge-badge');
-            if (cb) cb.style.display = u.dataset.charges === "2" ? 'block' : 'none';
-        });
-        grid.appendChild(clone);
+        const br = team.dataset.bossRow;
+        const brIdx = br !== '' && br !== undefined ? parseInt(br, 10) : -1;
+        if (!isNaN(brIdx) && brIdx >= 0 && brIdx < bossRows.length) {
+            const body = bossRows[br].querySelector('.boss-body');
+            if (body) {
+                body.appendChild(team);
+                resetInlinePositions(team);
+            }
+        } else {
+            const clone = team.cloneNode(true);
+            clone.querySelectorAll('.unit').forEach(u => {
+                const cb = u.querySelector('.charge-badge');
+                if (cb) cb.style.display = u.dataset.charges === "2" ? 'block' : 'none';
+            });
+            grid.appendChild(clone);
+        }
     });
 }
 
@@ -132,9 +142,17 @@ function moveTeamsFromMatrix() {
         ...grid.querySelectorAll('.team'),
         ...document.querySelectorAll('.matrix-boss-row .boss-body > .team')
     ];
+    const bossRows = document.querySelectorAll('#matrix-rows > .matrix-boss-row');
+    allMatrixTeams.forEach(team => {
+        const bossRow = team.closest('.matrix-boss-row');
+        if (bossRow) {
+            team.dataset.bossRow = Array.from(bossRows).indexOf(bossRow);
+        } else {
+            team.dataset.bossRow = '';
+        }
+    });
     document.querySelectorAll('.team').forEach(t => t.remove());
     allMatrixTeams.forEach(team => {
-        const units = team.querySelectorAll('.unit');
         const targetRow = layoutMode === 'rows'
             ? (team.dataset.element
                 ? ROWS_CONTAINER.querySelector(`.row[data-element="${team.dataset.element}"]`) || ROWS_CONTAINER.firstElementChild
