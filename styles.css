@@ -499,7 +499,7 @@ body:not(.matrix-row-direction-horizontal) .matrix-boss-row .boss-body {
 
 .matrix-boss-row .boss-body {
     flex: 1; min-height: 0; padding: 8px; border-radius: 0 0 8px 8px;
-    display: flex; flex-wrap: wrap; gap: 10px; align-content: center; align-items: center;
+    display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; align-content: center; align-items: center;
     border-top: 1px dashed #3a3a45;
 }
 .matrix-boss-row .boss-topbar {
