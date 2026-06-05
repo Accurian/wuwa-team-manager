@@ -485,30 +485,28 @@ body.matrix-row-direction-horizontal .matrix-boss-row {
 }
 .matrix-boss-row .boss-topbar {
     height: 28px; border-radius: 8px 8px 0 0; position: relative;
-    display: flex; align-items: center; padding: 0 6px; gap: 6px;
+    display: flex; justify-content: center; align-items: center;
     background: rgba(255,255,255,0.04); overflow: hidden;
+}
+.matrix-boss-row .boss-topbar .topbar-center {
+    display: inline-flex; align-items: center; gap: 8px;
 }
 .matrix-boss-row .boss-topbar .element-badge {
     width: 22px; height: 22px; border-radius: 50%;
     background-size: contain; background-repeat: no-repeat; background-position: center;
     flex-shrink: 0;
 }
-.matrix-boss-row .boss-topbar .element-badge.right-badge {
-    margin-left: auto;
-}
 .matrix-boss-row .boss-topbar .boss-name-label {
-    position: absolute; left: 50%; transform: translateX(-50%);
-    max-width: calc(100% - 80px);
     color: #fff; font-size: 14px; font-weight: 900; text-transform: uppercase;
     text-shadow: 0 1px 4px rgba(0,0,0,0.7);
     white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-    cursor: pointer; pointer-events: auto;
+    cursor: pointer; pointer-events: auto; max-width: 200px;
 }
 .matrix-boss-row .boss-topbar .boss-delete-btn {
     width: 22px; height: 22px; border-radius: 50%; border: none; cursor: pointer;
     background: rgba(90,30,30,0.7); color: #f88; font-size: 14px; line-height: 1;
     display: flex; align-items: center; justify-content: center; flex-shrink: 0;
-    transition: 0.2s; margin-left: auto;
+    transition: 0.2s; position: absolute; right: 6px; top: 50%; transform: translateY(-50%);
 }
 .matrix-boss-row .boss-topbar .boss-delete-btn:hover { background: rgba(120,30,30,0.9); color: #faa; }
 

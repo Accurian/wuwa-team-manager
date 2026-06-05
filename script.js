@@ -230,17 +230,22 @@ function addMatrixRow() {
     topbar.className = 'boss-topbar';
     topbar.style.display = 'none';
 
+    const centerGroup = document.createElement('div');
+    centerGroup.className = 'topbar-center';
+
     const leftBadge = document.createElement('div');
     leftBadge.className = 'element-badge';
-    topbar.appendChild(leftBadge);
+    centerGroup.appendChild(leftBadge);
 
     const nameLabel = document.createElement('span');
     nameLabel.className = 'boss-name-label';
-    topbar.appendChild(nameLabel);
+    centerGroup.appendChild(nameLabel);
 
     const rightBadge = document.createElement('div');
-    rightBadge.className = 'element-badge right-badge';
-    topbar.appendChild(rightBadge);
+    rightBadge.className = 'element-badge';
+    centerGroup.appendChild(rightBadge);
+
+    topbar.appendChild(centerGroup);
 
     const delBtn = document.createElement('button');
     delBtn.className = 'boss-delete-btn';
@@ -330,28 +335,29 @@ function addMatrixRow() {
 
         applyRowGradient(boss.resist);
 
-        // Left badge
-        if (boss.resist.length > 0) {
-            const ek = getElementKey(boss.resist[0]);
-            if (ek && ELEMENTS[ek]) {
-                leftBadge.style.backgroundColor = ELEMENTS[ek].color;
-                leftBadge.style.backgroundImage = `url('${ELEMENT_ICON_PATH}${ELEMENTS[ek].name}.png')`;
-            }
+        if (boss.resist.length === 0) {
+            leftBadge.style.display = 'none';
+            rightBadge.style.display = 'none';
         } else {
-            leftBadge.style.backgroundColor = '';
-            leftBadge.style.backgroundImage = '';
-        }
-
-        // Right badge (only shown for dual resistance)
-        if (boss.resist.length > 1) {
-            const ek = getElementKey(boss.resist[1]);
+            // Left badge — shown only for dual resistance
+            if (boss.resist.length > 1) {
+                const ek = getElementKey(boss.resist[0]);
+                if (ek && ELEMENTS[ek]) {
+                    leftBadge.style.backgroundColor = ELEMENTS[ek].color;
+                    leftBadge.style.backgroundImage = `url('${ELEMENT_ICON_PATH}${ELEMENTS[ek].name}.png')`;
+                }
+                leftBadge.style.display = '';
+            } else {
+                leftBadge.style.display = 'none';
+            }
+            // Right badge — always shown when there is at least one resistance
+            const ri = boss.resist.length > 1 ? 1 : 0;
+            const ek = getElementKey(boss.resist[ri]);
             if (ek && ELEMENTS[ek]) {
                 rightBadge.style.backgroundColor = ELEMENTS[ek].color;
                 rightBadge.style.backgroundImage = `url('${ELEMENT_ICON_PATH}${ELEMENTS[ek].name}.png')`;
-                rightBadge.style.display = '';
             }
-        } else {
-            rightBadge.style.display = 'none';
+            rightBadge.style.display = '';
         }
     }
 
