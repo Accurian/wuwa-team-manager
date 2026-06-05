@@ -305,6 +305,7 @@ function addMatrixRow() {
             opt.appendChild(bossIcon);
             opt.appendChild(nameSpan);
             opt.appendChild(resistSpan);
+            opt.dataset.bossName = b.name;
             opt.addEventListener('mousedown', (e) => { e.preventDefault(); selectBoss(b); });
             dd.appendChild(opt);
         });
@@ -384,8 +385,12 @@ function addMatrixRow() {
         if (e.code === 'Escape') hideDropdown();
         if (e.code === 'Enter') {
             const dd = document.getElementById('boss-dropdown');
-            const first = dd.querySelector('.boss-option');
-            if (first) first.click();
+            const firstOpt = dd.querySelector('.boss-option');
+            if (firstOpt) {
+                const bossName = firstOpt.dataset.bossName;
+                const boss = BOSS_LIST.find(b => b.name === bossName);
+                if (boss) selectBoss(boss);
+            }
         }
     });
 
