@@ -286,7 +286,7 @@ body.layout-rows #workspace-wrapper:active { cursor: default; }
 .row-topbar {
     height: 28px; border-radius: 8px 8px 0 0; position: relative;
     display: flex; align-items: center; padding: 0 6px; gap: 6px;
-    background: rgba(255,255,255,0.04); overflow: hidden;
+    background: rgba(255,255,255,0.04); overflow: hidden; cursor: grab;
 }
 .row.has-element .row-topbar { background: var(--row-grad); }
 .row-body {
