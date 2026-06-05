@@ -487,11 +487,14 @@ body.matrix-row-direction-horizontal #matrix-rows::-webkit-scrollbar-track {
 /* Individual Boss Row (in Matrix view) — mimics team/element row design */
 .matrix-boss-row {
     border-radius: 8px; border: 1px solid #3a3a45;
-    display: flex; flex-direction: column; flex: 1; min-height: 0;
+    display: flex; flex-direction: column; flex: none; height: 200px;
     position: relative; min-width: 290px;
 }
 body.matrix-row-direction-horizontal .matrix-boss-row {
-    width: 300px; flex: none; min-height: 200px;
+    width: 300px; flex: none; min-height: 200px; height: auto;
+}
+body:not(.matrix-row-direction-horizontal) .matrix-boss-row .boss-body {
+    overflow-y: auto;
 }
 
 .matrix-boss-row .boss-body {
