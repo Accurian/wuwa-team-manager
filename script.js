@@ -1429,7 +1429,7 @@ document.addEventListener('mousedown', (e) => {
     let unitTarget = e.target.closest('div.unit');
     let teamTarget = e.target.closest('.team');
 
-    if (unitTarget && unitTarget.closest('.team.locked')) {
+    if (unitTarget && (unitTarget.closest('.team.locked') || document.body.classList.contains('mode-matrix'))) {
         unitTarget = null;
     }
 
