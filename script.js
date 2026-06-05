@@ -538,12 +538,9 @@ document.addEventListener('mousedown', (e) => {
 let matrixScrollDrag = false, matrixScrollStartX = 0, matrixScrollStartScroll = 0;
 const matrixRows = document.getElementById('matrix-rows');
 matrixRows.addEventListener('mousedown', (e) => {
-    if (!document.body.classList.contains('mode-matrix') || !document.body.classList.contains('matrix-row-direction-horizontal')) return;
+    if (!document.body.classList.contains('mode-matrix')) return;
     if (e.button !== 0) return;
-    const rows = matrixRows.querySelectorAll('.matrix-boss-row');
-    let onRow = false;
-    rows.forEach(r => { if (r.contains(e.target)) onRow = true; });
-    if (onRow) return;
+    if (e.target.closest('.team')) return;
     matrixScrollDrag = true;
     matrixScrollStartX = e.clientX;
     matrixScrollStartScroll = matrixRows.scrollLeft;
