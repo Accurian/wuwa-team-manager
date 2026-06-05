@@ -711,6 +711,8 @@ async function cloudLoad() {
 function applySaveData(data) {
     document.querySelectorAll('.team').forEach(t => t.remove());
     document.querySelectorAll('.unit').forEach(u => u.remove());
+    document.querySelectorAll('#matrix-rows > .matrix-boss-row').forEach(r => r.remove());
+    document.getElementById('matrix-grid').innerHTML = '';
 
     if (data.customIcons) {
         for (const [key, iconData] of Object.entries(data.customIcons)) {
@@ -749,9 +751,24 @@ function applySaveData(data) {
             });
         }
     }
+
+    const wasMatrix = data.activeMode === 'matrix' && data.matrixBosses && data.matrixBosses.length > 0;
+
+    // Restore boss rows for matrix mode
+    if (wasMatrix) {
+        matrixBaseBosses = [];
+        const container = document.getElementById('matrix-rows');
+        data.matrixBosses.forEach(b => {
+            const bossData = BOSS_LIST.find(bl => bl.name === b.name);
+            if (bossData) {
+                createBossRowInline(container, bossData);
+            }
+        });
+    }
+
     data.teams.forEach(tData => {
         let team = createNewTeam(null, 0, 0, true);
-        if (layoutMode !== 'rows') {
+        if (!wasMatrix && layoutMode !== 'rows') {
             team.style.left = tData.x;
             team.style.top = tData.y;
         }
@@ -763,7 +780,7 @@ function applySaveData(data) {
         if (tData.locked) toggleTeamLock(team, true);
         if (tData.element) {
             applyElement(team, tData.element, tData.element2 || null);
-            if (layoutMode === 'rows') {
+            if (!wasMatrix && layoutMode === 'rows') {
                 let r = ROWS_CONTAINER.querySelector(`.row[data-element="${tData.element}"]`) || ROWS_CONTAINER.firstElementChild;
                 if (r) r.querySelector('.row-body').appendChild(team);
             }
@@ -779,7 +796,16 @@ function applySaveData(data) {
                 if (typeof uData !== 'string' && uData.unowned) { uEl.dataset.unowned = "true"; uEl.classList.add('unowned'); }
             }
         });
-        if (layoutMode === 'rows') {
+
+        if (wasMatrix) {
+            const bossRows = document.querySelectorAll('#matrix-rows > .matrix-boss-row');
+            if (tData.parentBoss !== null && tData.parentBoss !== undefined && tData.parentBoss >= 0 && tData.parentBoss < bossRows.length) {
+                const body = bossRows[tData.parentBoss].querySelector('.boss-body');
+                if (body) body.appendChild(team);
+            } else {
+                document.getElementById('matrix-grid').appendChild(team);
+            }
+        } else if (layoutMode === 'rows') {
             let r = null;
             if (tData.rowIdx !== undefined && tData.rowIdx >= 0 && tData.rowIdx < ROWS_CONTAINER.children.length) {
                 r = ROWS_CONTAINER.children[tData.rowIdx];
@@ -790,6 +816,16 @@ function applySaveData(data) {
         }
         updateTeamLayout(team);
     });
+
+    if (wasMatrix) {
+        document.body.classList.add('mode-matrix');
+        document.body.classList.remove('mode-freeform', 'mode-rows');
+        document.querySelectorAll('.mode-tab').forEach(t => {
+            t.classList.toggle('active', t.dataset.mode === 'matrix');
+        });
+        updateRowSettingsContext();
+    }
+
     if (data.hideNames) document.body.classList.add('hide-names');
     else document.body.classList.remove('hide-names');
     document.getElementById('show-names-toggle').checked = !data.hideNames;
@@ -1183,96 +1219,11 @@ document.getElementById('json-input').addEventListener('change', (e) => {
     reader.onload = function(event) {
         try {
             const data = JSON.parse(event.target.result);
-
-            document.querySelectorAll('.team').forEach(t => t.remove());
-            document.querySelectorAll('.unit').forEach(u => u.remove());
-
-            if (data.customIcons) {
-                for (const [key, iconData] of Object.entries(data.customIcons)) {
-                    if (!imageCache[key]) {
-                        imageCache[key] = { url: iconData.url, displayName: iconData.displayName, custom: true };
-                    }
-                }
-            }
-
-            for (const [zoneId, units] of Object.entries(data.roster)) {
-                const zone = document.getElementById(zoneId);
-                if (zone) {
-                    units.forEach(uData => {
-                        if (imageCache[uData.name]) {
-                            let uEl = createUnitElement(uData.name, imageCache[uData.name].displayName, imageCache[uData.name].url, zone);
-                            uEl.dataset.charges = uData.charges || "1";
-                            uEl.querySelector('.charge-badge').style.display = uEl.dataset.charges === "2" ? 'block' : 'none';
-                            if (uData.unowned) { uEl.dataset.unowned = "true"; uEl.classList.add('unowned'); }
-                        }
-                    });
-                }
-            }
-
-            if (data.layoutMode) { layoutMode = data.layoutMode; document.getElementById('layout-mode-select').value = layoutMode; }
-            if (data.rowDirection) { applyRowDirection(data.rowDirection); document.getElementById('row-direction-select').value = data.rowDirection; }
-            if (data.matrixRowDirection) { applyMatrixRowDirection(data.matrixRowDirection); }
-            if (data.rowAlign) { applyRowAlign(data.rowAlign); document.getElementById('row-align-select').value = data.rowAlign; }
-            updateRowSettingsVisibility();
-            if (layoutMode === 'rows') {
-                switchLayoutMode('rows');
-                if (data.rows) {
-                    document.querySelectorAll('.row').forEach((row, i) => {
-                        if (data.rows[i] && data.rows[i].element) {
-                            applyRowElement(row, data.rows[i].element);
-                        }
-                    });
-                }
-            }
-            data.teams.forEach(tData => {
-                let team = createNewTeam(null, 0, 0, true);
-                if (layoutMode !== 'rows') {
-                    team.style.left = tData.x;
-                    team.style.top = tData.y;
-                }
-
-                if (tData.name) {
-                    let label = team.querySelector('.team-name-label');
-                    if (label) label.textContent = tData.name;
-                }
-                if (tData.locked) toggleTeamLock(team, true);
-                if (tData.element) {
-                    applyElement(team, tData.element, tData.element2 || null);
-                    if (layoutMode === 'rows') {
-                        let r = ROWS_CONTAINER.querySelector(`.row[data-element="${tData.element}"]`) || ROWS_CONTAINER.firstElementChild;
-                        if (r) r.querySelector('.row-body').appendChild(team);
-                    }
-                }
-
-                tData.units.forEach(uData => {
-                    let uName = typeof uData === 'string' ? uData : uData.name;
-                    if (imageCache[uName]) {
-                        let uEl = createUnitElement(uName, imageCache[uName].displayName, imageCache[uName].url, team);
-                        let charges = typeof uData === 'string' ? "1" : (uData.charges || "1");
-                        uEl.dataset.charges = charges;
-                        uEl.querySelector('.charge-badge').style.display = charges === "2" ? 'block' : 'none';
-                        if (typeof uData !== 'string' && uData.unowned) { uEl.dataset.unowned = "true"; uEl.classList.add('unowned'); }
-                    }
-                });
-                updateTeamLayout(team);
-            });
-            if (data.hideNames) document.body.classList.add('hide-names');
-            else document.body.classList.remove('hide-names');
-            document.getElementById('show-names-toggle').checked = !data.hideNames;
-            if (data.snapToGrid !== undefined) snapToGrid = data.snapToGrid;
-            document.getElementById('snap-grid-toggle').checked = snapToGrid;
-            if (data.roverGender) { roverGender = data.roverGender; document.getElementById('rover-gender-select').value = roverGender; }
-            if (data.rosterMode) {
-                document.getElementById('roster-mode-select').value = data.rosterMode;
-                applyRosterMode(data.rosterMode);
-            }
-            document.getElementById('row-direction-row').style.display = layoutMode === 'rows' ? '' : 'none';
-            validateRosterAfterLoad();
-            loadImagesToUnsorted(document.getElementById('zone-unsorted'));
-            applyRoverGender();
-            isDirty = false;
+            applySaveData(data);
         } catch(err) {
             alert("Error parsing JSON layout file. Creating unsorted units instead.");
+            document.querySelectorAll('.team').forEach(t => t.remove());
+            document.querySelectorAll('.unit').forEach(u => u.remove());
             loadImagesToUnsorted(document.getElementById('zone-unsorted'));
         }
     };
@@ -1995,7 +1946,20 @@ function buildTeamFromSearch(query) {
 // --- JSON Save ---
 function gatherSaveData() {
     const inMatrix = document.body.classList.contains('mode-matrix');
-    let data = { teams: [], roster: {}, rows: [], hideNames: document.body.classList.contains('hide-names'), snapToGrid, roverGender, layoutMode, rowDirection, rowAlign, matrixRowDirection, rosterMode: document.getElementById('roster-mode-select').value };
+    let data = { teams: [], roster: {}, rows: [], hideNames: document.body.classList.contains('hide-names'), snapToGrid, roverGender, layoutMode, rowDirection, rowAlign, matrixRowDirection, rosterMode: document.getElementById('roster-mode-select').value, activeMode: inMatrix ? 'matrix' : 'builder', matrixBosses: [] };
+
+    if (inMatrix) {
+        const bossRows = document.querySelectorAll('#matrix-rows > .matrix-boss-row');
+        bossRows.forEach(row => {
+            const bossName = row.dataset.bossName;
+            if (bossName) {
+                const bossData = BOSS_LIST.find(b => b.name === bossName);
+                if (bossData) {
+                    data.matrixBosses.push({ file: bossData.file, name: bossData.name, resist: bossData.resist });
+                }
+            }
+        });
+    }
 
     let teamsSelector;
     if (inMatrix) {
@@ -2006,9 +1970,17 @@ function gatherSaveData() {
     document.querySelectorAll(teamsSelector).forEach(team => {
         let label = team.querySelector('.team-name-label');
         let rowIdx = -1;
-        if (layoutMode === 'rows') {
+        if (layoutMode === 'rows' && !inMatrix) {
             let parentRow = team.closest('.row');
             if (parentRow) rowIdx = Array.from(ROWS_CONTAINER.children).indexOf(parentRow);
+        }
+        let parentBoss = null;
+        if (inMatrix) {
+            const bossRow = team.closest('.matrix-boss-row');
+            if (bossRow) {
+                const allBossRows = document.querySelectorAll('#matrix-rows > .matrix-boss-row');
+                parentBoss = Array.from(allBossRows).indexOf(bossRow);
+            }
         }
         data.teams.push({
             name: label ? label.textContent : "",
@@ -2017,6 +1989,7 @@ function gatherSaveData() {
             element: team.dataset.element || "",
             element2: team.dataset.element2 || "",
             rowIdx: rowIdx,
+            parentBoss: parentBoss,
             units: Array.from(team.querySelectorAll('.unit')).map(u => ({ name: u.dataset.name, charges: u.dataset.charges || "1", unowned: u.dataset.unowned === "true" }))
         });
     });
