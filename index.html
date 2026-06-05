@@ -10,29 +10,47 @@
 
     <header>
         <div class="logo">WUTHERING WAVES TEAM MANAGER</div>
-        <div class="controls">
-            <div class="icon-btn folder-upload-wrapper" title="Upload Icons">
-                <input type="file" id="icons-input" webkitdirectory directory multiple accept="image/*">
-                <svg viewBox="0 0 24 24"><path d="M9 16h6v-6h4l-7-7-7 7h4zm-4 2h14v2H5z"/></svg>
-            </div>
-            <div class="icon-btn json-upload-wrapper">
-                <input type="file" id="json-input" accept=".json" title="Load">
-                <svg viewBox="0 0 24 24"><path d="M14 2H6c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V8l-6-6zm-1 7V3.5L18.5 9H13zM6 20V4h5v7h7v9H6z"/></svg>
-            </div>
-            <div class="icon-btn" id="save-btn" title="Save">
-                <svg viewBox="0 0 24 24"><path d="M17 3H5c-1.11 0-2 .9-2 2v14c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V7l-4-4zm-5 16c-1.66 0-3-1.34-3-3s1.34-3 3-3 3 1.34 3 3-1.34 3-3 3zm3-10H5V5h10v4z"/></svg>
-            </div>
-            <div class="icon-btn" id="sync-btn" title="Sync to Cloud">
-                <svg viewBox="0 0 24 24"><path d="M19.35 10.04C18.67 6.59 15.64 4 12 4 9.11 4 6.6 5.64 5.35 8.04 2.34 8.36 0 10.91 0 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96zM19 18H6c-2.21 0-4-1.79-4-4s1.79-4 4-4h.71C7.37 7.69 9.48 6 12 6c3.04 0 5.5 2.46 5.5 5.5v.5H19c1.66 0 3 1.34 3 3s-1.34 3-3 3z"/></svg>
-            </div>
-            <div class="icon-btn" id="settings-btn" title="Settings">
-                <svg viewBox="0 0 24 24"><path d="M19.14,12.94c0.04-0.3,0.06-0.61,0.06-0.94c0-0.32-0.02-0.64-0.06-0.94l2.03-1.58c0.18-0.14,0.23-0.41,0.12-0.61 l-1.92-3.32c-0.12-0.22-0.37-0.29-0.59-0.22l-2.39,0.96c-0.5-0.38-1.03-0.7-1.62-0.94L14.4,2.81c-0.04-0.24-0.24-0.41-0.48-0.41 h-3.84c-0.24,0-0.43,0.17-0.47,0.41L9.25,5.35C8.66,5.59,8.12,5.92,7.63,6.29L5.24,5.33c-0.22-0.08-0.47,0-0.59,0.22L2.73,8.87 C2.62,9.08,2.66,9.34,2.86,9.48l2.03,1.58C4.84,11.36,4.8,11.69,4.8,12s0.02,0.64,0.06,0.94l-2.03,1.58 c-0.18,0.14-0.23,0.41-0.12,0.61l1.92,3.32c0.12,0.22,0.37,0.29,0.59,0.22l2.39-0.96c0.5,0.38,1.03,0.7,1.62,0.94l0.36,2.54 C9.57,21.83,9.77,22,10.01,22h3.84c0.24,0,0.43-0.17,0.47-0.41l0.36-2.54c0.59-0.24,1.13-0.56,1.62-0.94l2.39,0.96 c0.22,0.08,0.47,0,0.59-0.22l1.92-3.32c0.12-0.22,0.07-0.49-0.12-0.61L19.14,12.94z M12,15.6c-1.98,0-3.6-1.62-3.6-3.6 s1.62-3.6,3.6-3.6s3.6,1.62,3.6,3.6S13.98,15.6,12,15.6z"/></svg>
-            </div>
-            <div class="icon-btn" id="user-btn" title="Account">
-                <svg viewBox="0 0 24 24"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>
-            </div>
+        <div class="menu-btn" id="menu-btn">
+            <svg viewBox="0 0 24 24"><path d="M3 18h18v-2H3v2zm0-5h18v-2H3v2zm0-7v2h18V6H3z"/></svg>
         </div>
     </header>
+
+    <div id="sidebar-overlay" class="sidebar-overlay"></div>
+    <div id="sidebar" class="sidebar">
+        <div class="sidebar-header">
+            <span>Menu</span>
+            <div class="sidebar-close" id="sidebar-close">&times;</div>
+        </div>
+        <div class="sidebar-items">
+            <div class="sidebar-item" id="sidebar-upload">
+                <input type="file" id="icons-input" multiple accept="image/png,image/jpeg,image/gif,image/webp">
+                <svg viewBox="0 0 24 24"><path d="M9 16h6v-6h4l-7-7-7 7h4zm-4 2h14v2H5z"/></svg>
+                <span>Upload icons</span>
+            </div>
+            <div class="sidebar-item" id="sidebar-load">
+                <input type="file" id="json-input" accept=".json">
+                <svg viewBox="0 0 24 24"><path d="M14 2H6c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V8l-6-6zm-1 7V3.5L18.5 9H13zM6 20V4h5v7h7v9H6z"/></svg>
+                <span>Load</span>
+            </div>
+            <div class="sidebar-item" id="sidebar-save">
+                <svg viewBox="0 0 24 24"><path d="M17 3H5c-1.11 0-2 .9-2 2v14c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V7l-4-4zm-5 16c-1.66 0-3-1.34-3-3s1.34-3 3-3 3 1.34 3 3-1.34 3-3 3zm3-10H5V5h10v4z"/></svg>
+                <span>Save</span>
+            </div>
+            <div class="sidebar-item" id="sidebar-sync">
+                <svg viewBox="0 0 24 24"><path d="M19.35 10.04C18.67 6.59 15.64 4 12 4 9.11 4 6.6 5.64 5.35 8.04 2.34 8.36 0 10.91 0 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96zM19 18H6c-2.21 0-4-1.79-4-4s1.79-4 4-4h.71C7.37 7.69 9.48 6 12 6c3.04 0 5.5 2.46 5.5 5.5v.5H19c1.66 0 3 1.34 3 3s-1.34 3-3 3z"/></svg>
+                <span>Sync</span>
+            </div>
+            <div class="sidebar-item" id="sidebar-settings">
+                <svg viewBox="0 0 24 24"><path d="M19.14,12.94c0.04-0.3,0.06-0.61,0.06-0.94c0-0.32-0.02-0.64-0.06-0.94l2.03-1.58c0.18-0.14,0.23-0.41,0.12-0.61 l-1.92-3.32c-0.12-0.22-0.37-0.29-0.59-0.22l-2.39,0.96c-0.5-0.38-1.03-0.7-1.62-0.94L14.4,2.81c-0.04-0.24-0.24-0.41-0.48-0.41 h-3.84c-0.24,0-0.43,0.17-0.47,0.41L9.25,5.35C8.66,5.59,8.12,5.92,7.63,6.29L5.24,5.33c-0.22-0.08-0.47,0-0.59,0.22L2.73,8.87 C2.62,9.08,2.66,9.34,2.86,9.48l2.03,1.58C4.84,11.36,4.8,11.69,4.8,12s0.02,0.64,0.06,0.94l-2.03,1.58 c-0.18,0.14-0.23,0.41-0.12,0.61l1.92,3.32c0.12,0.22,0.37,0.29,0.59,0.22l2.39-0.96c0.5,0.38,1.03,0.7,1.62,0.94l0.36,2.54 C9.57,21.83,9.77,22,10.01,22h3.84c0.24,0,0.43-0.17,0.47-0.41l0.36-2.54c0.59-0.24,1.13-0.56,1.62-0.94l2.39,0.96 c0.22,0.08,0.47,0,0.59-0.22l1.92-3.32c0.12-0.22,0.07-0.49-0.12-0.61L19.14,12.94z M12,15.6c-1.98,0-3.6-1.62-3.6-3.6 s1.62-3.6,3.6-3.6s3.6,1.62,3.6,3.6S13.98,15.6,12,15.6z"/></svg>
+                <span>Settings</span>
+            </div>
+            <div class="sidebar-divider"></div>
+            <div class="sidebar-item" id="sidebar-user">
+                <svg viewBox="0 0 24 24"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>
+                <span id="sidebar-user-label">Login / Register</span>
+            </div>
+        </div>
+    </div>
 
     <div id="workspace-wrapper">
         <div id="workspace-plane">
@@ -48,7 +66,7 @@
 
     <div id="roster-panel">
         <div id="resizer"></div>
-        <div id="categories-wrapper">
+        <div id="categories-wrapper" class="roster-advanced">
             <div class="roster-title" id="categories-title">TEAM ROSTER</div>
             <div id="categories">
                 <div class="roster-section"><div class="roster-title">MAIN DPS</div><div class="drop-zone grid-zone" id="zone-main"></div></div>
@@ -60,14 +78,16 @@
             <div id="zone-unsorted-wrapper">
                 <div class="roster-title" id="unsorted-title">UNSORTED</div><div class="drop-zone unsorted-zone" id="zone-unsorted"></div>
             </div>
-            <div id="zone-unowned-wrapper">
+            <div id="zone-unowned-wrapper" class="roster-advanced">
                 <div class="roster-title" id="unowned-title">UNOWNED</div><div class="drop-zone unsorted-zone" id="zone-unowned"></div>
             </div>
         </div>
     </div>
 
+    <button id="fab-add" class="fab-add" title="Add team (Space)">+</button>
+
     <div id="search-overlay" class="overlay">
-        <input type="text" id="search-input" placeholder="Type names (e.g. Cart Jiy)" autocomplete="off">
+        <input type="text" id="search-input" placeholder="(e.g. Carte Cia Rov)" autocomplete="off">
         <div class="hint-text">Press Enter to create team. Esc to cancel.</div>
     </div>
 
@@ -81,6 +101,13 @@
             <div class="setting-row">
                 <label>Snap to Grid (Teams)</label>
                 <input type="checkbox" id="snap-grid-toggle">
+            </div>
+            <div class="setting-row">
+                <label>Roster Mode</label>
+                <select id="roster-mode-select" style="background:#2a2a35;color:#e0e0e0;border:1px solid #4a4a5a;border-radius:4px;padding:2px 4px;outline:none;">
+                    <option value="basic">Basic</option>
+                    <option value="advanced">Advanced</option>
+                </select>
             </div>
             <div class="setting-row">
                 <label>Layout Style</label>
@@ -117,26 +144,37 @@
 
     <div id="auth-overlay" class="overlay">
         <div class="modal" style="max-width:360px;">
-            <h2 id="auth-title">Login</h2>
-            <div class="setting-row" id="auth-username-row" style="display:none;">
-                <label>Username</label>
-                <input type="text" id="auth-username" placeholder="choose a username" style="background:#2a2a35;color:#e0e0e0;border:1px solid #4a4a5a;border-radius:4px;padding:4px 6px;outline:none;width:180px;">
+            <div class="auth-tabs">
+                <div class="auth-tab active" data-tab="login">Login</div>
+                <div class="auth-tab" data-tab="register">Register</div>
             </div>
-            <div class="setting-row">
-                <label>Email / Username</label>
-                <input type="text" id="auth-email" placeholder="email or username" style="background:#2a2a35;color:#e0e0e0;border:1px solid #4a4a5a;border-radius:4px;padding:4px 6px;outline:none;width:180px;">
+            <div id="auth-login-form">
+                <div class="auth-field">
+                    <label>Email / Username</label>
+                    <input type="text" id="auth-email" placeholder="email or username">
+                </div>
+                <div class="auth-field">
+                    <label>Password</label>
+                    <input type="password" id="auth-password" placeholder="password">
+                </div>
             </div>
-            <div class="setting-row">
-                <label>Password</label>
-                <input type="password" id="auth-password" placeholder="min 6 characters" style="background:#2a2a35;color:#e0e0e0;border:1px solid #4a4a5a;border-radius:4px;padding:4px 6px;outline:none;width:180px;">
+            <div id="auth-register-form" style="display:none;">
+                <div class="auth-field">
+                    <label>Username</label>
+                    <input type="text" id="auth-username" placeholder="choose a username">
+                </div>
+                <div class="auth-field">
+                    <label>Email</label>
+                    <input type="email" id="auth-email-reg" placeholder="your@email.com">
+                </div>
+                <div class="auth-field">
+                    <label>Password</label>
+                    <input type="password" id="auth-password-reg" placeholder="min 6 characters">
+                </div>
             </div>
-            <div id="auth-error" style="color:#e74c3c;font-size:12px;display:none;text-align:center;"></div>
-            <div id="auth-success" style="color:#2ecc71;font-size:12px;display:none;text-align:center;"></div>
-            <div style="display:flex;gap:8px;margin-top:4px;">
-                <button id="auth-submit" style="flex:1;background:#3a3a45;color:#e0e0e0;border:1px solid #4a4a5a;border-radius:4px;padding:6px;cursor:pointer;">Login</button>
-                <button id="auth-toggle-btn" style="flex:1;background:#2a2a35;color:#888;border:1px solid #4a4a5a;border-radius:4px;padding:6px;cursor:pointer;">Register instead</button>
-            </div>
-            <div class="hint-text" style="text-align:center;margin-top:8px;">Click outside to close</div>
+            <div id="auth-error" style="color:#e74c3c;font-size:12px;display:none;text-align:center;margin:4px 0;"></div>
+            <div id="auth-success" style="color:#2ecc71;font-size:12px;display:none;text-align:center;margin:4px 0;"></div>
+            <button id="auth-submit" class="auth-submit-btn">Login</button>
         </div>
     </div>
 

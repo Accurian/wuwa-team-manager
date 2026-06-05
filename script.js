@@ -30,6 +30,8 @@ elementSelector.style.cssText = 'position:fixed;z-index:10001;background:#20202b
 elementSelector.addEventListener('click', (e) => e.stopPropagation());
 document.body.appendChild(elementSelector);
 
+
+
 const workspaceWrapper = document.getElementById('workspace-wrapper');
 const workspacePlane = document.getElementById('workspace-plane');
 const zoomSlider = document.getElementById('zoom-slider');
@@ -40,8 +42,9 @@ window.addEventListener('beforeunload', (e) => {
 });
 
 // --- Settings ---
-document.getElementById('settings-btn').addEventListener('click', () => {
+document.getElementById('sidebar-settings').addEventListener('click', () => {
     document.getElementById('settings-overlay').style.display = 'flex';
+    closeSidebar();
 });
 document.getElementById('settings-overlay').addEventListener('mousedown', (e) => {
     if(e.target === document.getElementById('settings-overlay')) e.target.style.display = 'none';
@@ -56,6 +59,15 @@ document.getElementById('rover-gender-select').addEventListener('change', (e) =>
     applyRoverGender();
     markDirty();
 });
+function applyRosterMode(mode) {
+    document.body.classList.toggle('roster-basic', mode === 'basic');
+    document.body.classList.toggle('roster-advanced', mode === 'advanced');
+    document.getElementById('unsorted-title').textContent = mode === 'basic' ? 'ROSTER' : 'UNSORTED';
+}
+
+document.getElementById('roster-mode-select').addEventListener('change', (e) => {
+    applyRosterMode(e.target.value);
+});
 
 function applyRoverGender() {
     const genderKey = roverGender === 'female' ? 'rover(female)' : 'rover(male)';
@@ -67,6 +79,19 @@ function applyRoverGender() {
     });
 }
 
+// --- Sidebar ---
+function openSidebar() {
+    document.getElementById('sidebar').classList.add('open');
+    document.getElementById('sidebar-overlay').classList.add('open');
+}
+function closeSidebar() {
+    document.getElementById('sidebar').classList.remove('open');
+    document.getElementById('sidebar-overlay').classList.remove('open');
+}
+document.getElementById('menu-btn').addEventListener('click', openSidebar);
+document.getElementById('sidebar-close').addEventListener('click', closeSidebar);
+document.getElementById('sidebar-overlay').addEventListener('click', closeSidebar);
+
 // --- Auth ---
 async function checkSession() {
     const { data: { session } } = await supabaseClient.auth.getSession();
@@ -75,30 +100,25 @@ async function checkSession() {
 }
 
 function updateUserUI() {
-    const btn = document.getElementById('user-btn');
-    const syncBtn = document.getElementById('sync-btn');
+    const label = document.getElementById('sidebar-user-label');
+    const syncItem = document.getElementById('sidebar-sync');
     if (currentUser) {
-        btn.title = currentUser.email;
-        btn.innerHTML = '<svg viewBox="0 0 24 24"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>';
-        btn.style.borderColor = '#2ecc71';
-        syncBtn.style.borderColor = '#2ecc71';
-        syncBtn.title = 'Sync to Cloud';
+        label.textContent = currentUser.email || currentUser.user_metadata?.username || 'Account';
+        syncItem.style.borderLeft = '3px solid #2ecc71';
     } else {
-        btn.title = 'Login';
-        btn.innerHTML = '<svg viewBox="0 0 24 24"><path d="M11 7L9.6 8.4l2.6 2.6H2v2h10.2l-2.6 2.6L11 17l5-5-5-5zm9 12h-8v2h8c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2h-8v2h8v14z"/></svg>';
-        btn.style.borderColor = '#4a4a5a';
-        syncBtn.style.borderColor = '#4a4a5a';
-        syncBtn.title = 'Sync to Cloud';
+        label.textContent = 'Login / Register';
+        syncItem.style.borderLeft = 'none';
     }
 }
 
 let authMode = 'login';
-document.getElementById('user-btn').addEventListener('click', () => {
+document.getElementById('sidebar-user').addEventListener('click', () => {
     if (currentUser) {
         supabaseClient.auth.signOut();
     } else {
         document.getElementById('auth-overlay').style.display = 'flex';
     }
+    closeSidebar();
 });
 
 document.getElementById('auth-overlay').addEventListener('mousedown', (e) => {
@@ -109,21 +129,21 @@ document.getElementById('auth-overlay').addEventListener('mousedown', (e) => {
     }
 });
 
-document.getElementById('auth-toggle-btn').addEventListener('click', () => {
-    authMode = authMode === 'login' ? 'register' : 'login';
-    document.getElementById('auth-title').textContent = authMode === 'login' ? 'Login' : 'Register';
-    document.getElementById('auth-submit').textContent = authMode === 'login' ? 'Login' : 'Register';
-    document.getElementById('auth-toggle-btn').textContent = authMode === 'login' ? 'Register instead' : 'Login instead';
-    document.getElementById('auth-username-row').style.display = authMode === 'register' ? '' : 'none';
-    document.getElementById('auth-email').placeholder = authMode === 'login' ? 'email or username' : 'your@email.com';
-    document.getElementById('auth-error').style.display = 'none';
-    document.getElementById('auth-success').style.display = 'none';
+// Auth tab switching
+document.querySelectorAll('.auth-tab').forEach(tab => {
+    tab.addEventListener('click', () => {
+        document.querySelectorAll('.auth-tab').forEach(t => t.classList.remove('active'));
+        tab.classList.add('active');
+        authMode = tab.dataset.tab;
+        document.getElementById('auth-login-form').style.display = authMode === 'login' ? '' : 'none';
+        document.getElementById('auth-register-form').style.display = authMode === 'register' ? '' : 'none';
+        document.getElementById('auth-submit').textContent = authMode === 'login' ? 'Login' : 'Register';
+        document.getElementById('auth-error').style.display = 'none';
+        document.getElementById('auth-success').style.display = 'none';
+    });
 });
 
 document.getElementById('auth-submit').addEventListener('click', async () => {
-    const input = document.getElementById('auth-email').value.trim();
-    const password = document.getElementById('auth-password').value;
-    const username = document.getElementById('auth-username').value.trim();
     const errorEl = document.getElementById('auth-error');
     const successEl = document.getElementById('auth-success');
     errorEl.style.display = 'none';
@@ -131,6 +151,8 @@ document.getElementById('auth-submit').addEventListener('click', async () => {
 
     try {
         if (authMode === 'login') {
+            const input = document.getElementById('auth-email').value.trim();
+            const password = document.getElementById('auth-password').value;
             if (!input || !password) {
                 errorEl.textContent = 'Please enter email/username and password.';
                 errorEl.style.display = 'block';
@@ -146,12 +168,15 @@ document.getElementById('auth-submit').addEventListener('click', async () => {
             if (error) throw error;
             document.getElementById('auth-overlay').style.display = 'none';
         } else {
+            const username = document.getElementById('auth-username').value.trim();
+            const email = document.getElementById('auth-email-reg').value.trim();
+            const password = document.getElementById('auth-password-reg').value;
             if (!username) {
                 errorEl.textContent = 'Please choose a username.';
                 errorEl.style.display = 'block';
                 return;
             }
-            if (!input || !input.includes('@')) {
+            if (!email || !email.includes('@')) {
                 errorEl.textContent = 'Please enter a valid email address.';
                 errorEl.style.display = 'block';
                 return;
@@ -162,7 +187,7 @@ document.getElementById('auth-submit').addEventListener('click', async () => {
                 return;
             }
             const { data, error } = await supabaseClient.auth.signUp({
-                email: input,
+                email,
                 password,
                 options: { data: { username } }
             });
@@ -178,6 +203,9 @@ document.getElementById('auth-submit').addEventListener('click', async () => {
 
 // Allow Enter key to submit
 document.getElementById('auth-password').addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') document.getElementById('auth-submit').click();
+});
+document.getElementById('auth-password-reg').addEventListener('keydown', (e) => {
     if (e.key === 'Enter') document.getElementById('auth-submit').click();
 });
 
@@ -239,6 +267,7 @@ function applySaveData(data) {
                     let uEl = createUnitElement(uData.name, imageCache[uData.name].displayName, imageCache[uData.name].url, zone);
                     uEl.dataset.charges = uData.charges || "1";
                     uEl.querySelector('.charge-badge').style.display = uEl.dataset.charges === "2" ? 'block' : 'none';
+                    if (uData.unowned) { uEl.dataset.unowned = "true"; uEl.classList.add('unowned'); }
                 }
             });
         }
@@ -285,8 +314,18 @@ function applySaveData(data) {
                 let charges = typeof uData === 'string' ? "1" : (uData.charges || "1");
                 uEl.dataset.charges = charges;
                 uEl.querySelector('.charge-badge').style.display = charges === "2" ? 'block' : 'none';
+                if (typeof uData !== 'string' && uData.unowned) { uEl.dataset.unowned = "true"; uEl.classList.add('unowned'); }
             }
         });
+        if (layoutMode === 'rows') {
+            let r = null;
+            if (tData.rowIdx !== undefined && tData.rowIdx >= 0 && tData.rowIdx < ROWS_CONTAINER.children.length) {
+                r = ROWS_CONTAINER.children[tData.rowIdx];
+            } else {
+                r = ROWS_CONTAINER.querySelector(`.row[data-element="${tData.element}"]`) || ROWS_CONTAINER.firstElementChild;
+            }
+            if (r) r.querySelector('.row-body').appendChild(team);
+        }
         updateTeamLayout(team);
     });
     if (data.hideNames) document.body.classList.add('hide-names');
@@ -295,6 +334,10 @@ function applySaveData(data) {
     if (data.snapToGrid !== undefined) snapToGrid = data.snapToGrid;
     document.getElementById('snap-grid-toggle').checked = snapToGrid;
     if (data.roverGender) { roverGender = data.roverGender; document.getElementById('rover-gender-select').value = roverGender; }
+    if (data.rosterMode) {
+        document.getElementById('roster-mode-select').value = data.rosterMode;
+        applyRosterMode(data.rosterMode);
+    }
     document.getElementById('row-direction-row').style.display = layoutMode === 'rows' ? '' : 'none';
     validateRosterAfterLoad();
     loadImagesToUnsorted(document.getElementById('zone-unsorted'));
@@ -475,6 +518,7 @@ if (layoutMode === 'rows') switchLayoutMode('rows');
 applyRowDirection(rowDirection);
 applyRowAlign(rowAlign);
 document.body.classList.add('hide-names');
+applyRosterMode('basic');
 checkSession();
 
 // --- Viewport Panning, Zooming & Anti-Void ---
@@ -554,6 +598,7 @@ document.addEventListener('mousemove', (e) => {
     newHeight = Math.max(160, Math.min(newHeight, window.innerHeight - 100));
     rosterPanel.style.height = newHeight + 'px';
     workspaceWrapper.style.bottom = newHeight + 'px';
+    document.getElementById('fab-add').style.bottom = (newHeight + 10) + 'px';
 });
 document.addEventListener('mouseup', () => { if (isResizing) { isResizing = false; document.body.style.cursor = 'default'; } });
 
@@ -572,6 +617,10 @@ fetch('characters.json').then(r => r.json()).then(list => {
 
 const MAX_CUSTOM_ICONS = 10;
 const MAX_ICON_SIZE = 50 * 1024;
+
+// Close sidebar on file select
+document.getElementById('icons-input').addEventListener('change', () => closeSidebar());
+document.getElementById('json-input').addEventListener('change', () => closeSidebar());
 
 // --- Icon Loader ---
 document.getElementById('icons-input').addEventListener('change', async (e) => {
@@ -645,6 +694,7 @@ document.getElementById('json-input').addEventListener('change', (e) => {
                             let uEl = createUnitElement(uData.name, imageCache[uData.name].displayName, imageCache[uData.name].url, zone);
                             uEl.dataset.charges = uData.charges || "1";
                             uEl.querySelector('.charge-badge').style.display = uEl.dataset.charges === "2" ? 'block' : 'none';
+                            if (uData.unowned) { uEl.dataset.unowned = "true"; uEl.classList.add('unowned'); }
                         }
                     });
                 }
@@ -691,6 +741,7 @@ document.getElementById('json-input').addEventListener('change', (e) => {
                         let charges = typeof uData === 'string' ? "1" : (uData.charges || "1");
                         uEl.dataset.charges = charges;
                         uEl.querySelector('.charge-badge').style.display = charges === "2" ? 'block' : 'none';
+                        if (typeof uData !== 'string' && uData.unowned) { uEl.dataset.unowned = "true"; uEl.classList.add('unowned'); }
                     }
                 });
                 updateTeamLayout(team);
@@ -701,6 +752,10 @@ document.getElementById('json-input').addEventListener('change', (e) => {
             if (data.snapToGrid !== undefined) snapToGrid = data.snapToGrid;
             document.getElementById('snap-grid-toggle').checked = snapToGrid;
             if (data.roverGender) { roverGender = data.roverGender; document.getElementById('rover-gender-select').value = roverGender; }
+            if (data.rosterMode) {
+                document.getElementById('roster-mode-select').value = data.rosterMode;
+                applyRosterMode(data.rosterMode);
+            }
             document.getElementById('row-direction-row').style.display = layoutMode === 'rows' ? '' : 'none';
             validateRosterAfterLoad();
             loadImagesToUnsorted(document.getElementById('zone-unsorted'));
@@ -732,6 +787,7 @@ function createUnitElement(id, displayName, iconUrl, targetNode) {
     unit.className = 'unit';
     unit.dataset.name = id;
     unit.dataset.charges = "1";
+    unit.dataset.unowned = "false";
 
     const icon = document.createElement('div');
     icon.className = 'unit-icon';
@@ -749,6 +805,11 @@ function createUnitElement(id, displayName, iconUrl, targetNode) {
     unit.appendChild(icon);
     unit.appendChild(nameLabel);
 
+    if (iconUrl.includes('(x2)') || id.includes('(x2)')) {
+        unit.dataset.charges = "2";
+        badge.style.display = 'block';
+    }
+
     if (imageCache[id]?.custom) {
         const delBtn = document.createElement('div');
         delBtn.className = 'unit-delete';
@@ -763,6 +824,20 @@ function createUnitElement(id, displayName, iconUrl, targetNode) {
         unit.appendChild(delBtn);
     }
 
+    const unownedBtn = document.createElement('div');
+    unownedBtn.className = 'unit-unowned-btn';
+    unownedBtn.innerHTML = '<svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>';
+    unownedBtn.addEventListener('mousedown', (e) => e.stopPropagation());
+    unownedBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const isUnowned = unit.dataset.unowned === "true";
+        unit.dataset.unowned = isUnowned ? "false" : "true";
+        unit.classList.toggle('unowned', !isUnowned);
+        sortAllZones();
+        markDirty();
+    });
+    unit.appendChild(unownedBtn);
+
     if (targetNode) targetNode.appendChild(unit);
     return unit;
 }
@@ -770,7 +845,12 @@ function createUnitElement(id, displayName, iconUrl, targetNode) {
 function sortAllZones() {
     document.querySelectorAll('.drop-zone').forEach(zone => {
         Array.from(zone.querySelectorAll('div.unit'))
-            .sort((a, b) => a.dataset.name.localeCompare(b.dataset.name))
+            .sort((a, b) => {
+                const aUnowned = a.dataset.unowned === "true";
+                const bUnowned = b.dataset.unowned === "true";
+                if (aUnowned !== bUnowned) return aUnowned ? 1 : -1;
+                return a.dataset.name.localeCompare(b.dataset.name);
+            })
             .forEach(node => zone.appendChild(node));
     });
 }
@@ -1296,14 +1376,26 @@ document.addEventListener('click', (e) => {
 const searchOverlay = document.getElementById('search-overlay');
 const searchInput = document.getElementById('search-input');
 
+document.getElementById('fab-add').addEventListener('click', () => {
+    searchOverlay.style.display = 'flex';
+    searchInput.focus();
+});
+
 document.addEventListener('keydown', (e) => {
     if (e.code === 'Space' && e.target.tagName !== 'INPUT' && document.activeElement.tagName !== 'INPUT') {
         e.preventDefault();
         searchOverlay.style.display = 'flex';
         searchInput.focus();
     }
-    if (e.code === 'Escape' && searchOverlay.style.display === 'flex') {
-        searchOverlay.style.display = 'none'; searchInput.value = '';
+    if (e.code === 'Escape') {
+        if (searchOverlay.style.display === 'flex') {
+            searchOverlay.style.display = 'none'; searchInput.value = '';
+        }
+        if (document.getElementById('auth-overlay').style.display === 'flex') {
+            document.getElementById('auth-overlay').style.display = 'none';
+            document.getElementById('auth-error').style.display = 'none';
+            document.getElementById('auth-success').style.display = 'none';
+        }
     }
 });
 
@@ -1359,24 +1451,31 @@ function buildTeamFromSearch(query) {
 
 // --- JSON Save ---
 function gatherSaveData() {
-    let data = { teams: [], roster: {}, rows: [], hideNames: document.body.classList.contains('hide-names'), snapToGrid, roverGender, layoutMode, rowDirection, rowAlign };
+    let data = { teams: [], roster: {}, rows: [], hideNames: document.body.classList.contains('hide-names'), snapToGrid, roverGender, layoutMode, rowDirection, rowAlign, rosterMode: document.getElementById('roster-mode-select').value };
 
     document.querySelectorAll('.team').forEach(team => {
         let label = team.querySelector('.team-name-label');
+        let rowIdx = -1;
+        if (layoutMode === 'rows') {
+            let parentRow = team.closest('.row');
+            if (parentRow) rowIdx = Array.from(ROWS_CONTAINER.children).indexOf(parentRow);
+        }
         data.teams.push({
             name: label ? label.textContent : "",
             x: team.style.left, y: team.style.top,
             locked: team.classList.contains('locked'),
             element: team.dataset.element || "",
             element2: team.dataset.element2 || "",
-            units: Array.from(team.querySelectorAll('.unit')).map(u => ({ name: u.dataset.name, charges: u.dataset.charges || "1" }))
+            rowIdx: rowIdx,
+            units: Array.from(team.querySelectorAll('.unit')).map(u => ({ name: u.dataset.name, charges: u.dataset.charges || "1", unowned: u.dataset.unowned === "true" }))
         });
     });
 
     document.querySelectorAll('.drop-zone').forEach(zone => {
         data.roster[zone.id] = Array.from(zone.querySelectorAll('.unit')).map(u => ({
             name: u.dataset.name,
-            charges: u.dataset.charges
+            charges: u.dataset.charges,
+            unowned: u.dataset.unowned === "true"
         }));
     });
 
@@ -1394,7 +1493,7 @@ function gatherSaveData() {
     return data;
 }
 
-document.getElementById('save-btn').addEventListener('click', () => {
+document.getElementById('sidebar-save').addEventListener('click', () => {
     let data = gatherSaveData();
     const blob = new Blob([JSON.stringify(data, null, 2)], {type: 'application/json'});
     const url = URL.createObjectURL(blob);
@@ -1404,37 +1503,34 @@ document.getElementById('save-btn').addEventListener('click', () => {
     a.click();
     URL.revokeObjectURL(url);
     isDirty = false;
+    closeSidebar();
 
     cloudSave(data);
 });
 
 let lastSyncTime = 0;
 const SYNC_COOLDOWN = 30000;
-document.getElementById('sync-btn').addEventListener('click', async () => {
-    const btn = document.getElementById('sync-btn');
+
+async function performSync(anchor) {
     const now = Date.now();
     if (now - lastSyncTime < SYNC_COOLDOWN) {
         const remaining = Math.ceil((SYNC_COOLDOWN - (now - lastSyncTime)) / 1000);
-        showSyncNotification(btn, `Wait ${remaining}s`, '#e67e22');
+        showSyncNotification(anchor, `Wait ${remaining}s`, '#e67e22');
         return;
     }
     if (!currentUser) {
-        showSyncNotification(btn, 'Login first', '#e74c3c');
+        showSyncNotification(anchor, 'Login first', '#e74c3c');
         return;
     }
 
     lastSyncTime = now;
-    btn.title = 'Syncing...';
-    btn.style.borderColor = '#3498db';
-
     await cloudSave(gatherSaveData());
+    showSyncNotification(anchor, 'Synced!');
+}
 
-    btn.title = 'Synced!';
-    btn.style.borderColor = '#2ecc71';
-    showSyncNotification(btn, 'Synced!');
-    setTimeout(() => {
-        btn.title = 'Sync to Cloud';
-    }, 2000);
+document.getElementById('sidebar-sync').addEventListener('click', async () => {
+    await performSync(document.getElementById('sidebar-sync'));
+    closeSidebar();
 });
 
 function showSyncNotification(anchor, text, color = '#2ecc71') {
@@ -1445,7 +1541,7 @@ function showSyncNotification(anchor, text, color = '#2ecc71') {
     const note = document.createElement('div');
     note.className = 'sync-notification';
     note.textContent = text;
-    note.style.cssText = `position:fixed;top:${rect.bottom + 6}px;right:${document.querySelector('.controls').getBoundingClientRect().right - rect.right}px;background:${color};color:#fff;font-size:12px;padding:4px 10px;border-radius:4px;z-index:9999;opacity:0;transition:opacity 0.3s;pointer-events:none;`;
+    note.style.cssText = `position:fixed;top:${rect.bottom + 6}px;right:${Math.max(10, window.innerWidth - rect.right + 10)}px;background:${color};color:#fff;font-size:12px;padding:4px 10px;border-radius:4px;z-index:9999;opacity:0;transition:opacity 0.3s;pointer-events:none;`;
     document.body.appendChild(note);
     requestAnimationFrame(() => note.style.opacity = '1');
     setTimeout(() => {
@@ -1453,3 +1549,12 @@ function showSyncNotification(anchor, text, color = '#2ecc71') {
         setTimeout(() => note.remove(), 300);
     }, 2000);
 }
+
+// Auto-sync interval (every 60s when logged in with changes)
+setInterval(() => {
+    if (isDirty && currentUser) {
+        lastSyncTime = Date.now();
+        cloudSave(gatherSaveData());
+        isDirty = false;
+    }
+}, 60000);
