@@ -449,6 +449,31 @@ body.mode-matrix {
     background: #1a1a24;
 }
 
+.matrix-container {
+    display: none; position: absolute; top: 60px; left: 0; right: 0; bottom: 0;
+    flex-direction: column;
+}
+body.mode-matrix .matrix-container { display: flex; }
+
+.matrix-header {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 8px 16px; background: #20202b; border-bottom: 1px solid #3a3a45; flex-shrink: 0;
+}
+
+.matrix-grid {
+    flex: 1; padding: 20px; overflow-y: auto;
+    display: flex; flex-wrap: wrap; align-content: flex-start; gap: 16px;
+    background-image:
+        linear-gradient(rgba(255,255,255,0.02) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,0.02) 1px, transparent 1px);
+    background-size: 40px 40px;
+}
+
+.matrix-grid .team {
+    position: relative; cursor: grab; flex-shrink: 0;
+}
+.matrix-grid .team:active { cursor: grabbing; }
+
 /* Floating Add Button */
 .fab-add {
     position: fixed; bottom: 340px; right: 24px;

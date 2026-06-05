@@ -107,12 +107,58 @@ function applyRoverGender() {
 }
 
 // --- Mode Toggle ---
+const matrixGrid = document.getElementById('matrix-grid');
+
+function moveTeamsToMatrix() {
+    const grid = document.getElementById('matrix-grid');
+    grid.innerHTML = '';
+    document.querySelectorAll('.team').forEach(team => {
+        const clone = team.cloneNode(true);
+        clone.querySelectorAll('.unit').forEach(u => {
+            const cb = u.querySelector('.charge-badge');
+            if (cb) cb.style.display = u.dataset.charges === "2" ? 'block' : 'none';
+        });
+        grid.appendChild(clone);
+    });
+}
+
+function moveTeamsFromMatrix() {
+    const grid = document.getElementById('matrix-grid');
+    document.querySelectorAll('.team').forEach(t => t.remove());
+    grid.querySelectorAll('.team').forEach(team => {
+        const units = team.querySelectorAll('.unit');
+        const targetRow = layoutMode === 'rows'
+            ? (team.dataset.element
+                ? ROWS_CONTAINER.querySelector(`.row[data-element="${team.dataset.element}"]`) || ROWS_CONTAINER.firstElementChild
+                : ROWS_CONTAINER.querySelector('.row:not([data-element])') || ROWS_CONTAINER.firstElementChild)
+            : null;
+        if (layoutMode === 'rows' && targetRow) {
+            targetRow.querySelector('.row-body').appendChild(team);
+        } else {
+            workspacePlane.appendChild(team);
+            const rect = team.getBoundingClientRect();
+            const coords = getPlaneCoords(rect.left + rect.width/2, rect.top + rect.height/2);
+            team.style.left = (coords.x - 135) + 'px';
+            team.style.top = (coords.y - 45) + 'px';
+        }
+        updateTeamLayout(team);
+    });
+}
+
 document.querySelectorAll('.mode-tab').forEach(tab => {
     tab.addEventListener('click', () => {
         document.querySelectorAll('.mode-tab').forEach(t => t.classList.remove('active'));
         tab.classList.add('active');
         const mode = tab.dataset.mode;
-        document.body.classList.toggle('mode-matrix', mode === 'matrix');
+        const isMatrix = mode === 'matrix';
+
+        if (isMatrix) {
+            moveTeamsToMatrix();
+        } else {
+            moveTeamsFromMatrix();
+        }
+
+        document.body.classList.toggle('mode-matrix', isMatrix);
     });
 });
 
