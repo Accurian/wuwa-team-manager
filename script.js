@@ -873,7 +873,7 @@ function applySaveData(data) {
     clearTimeout(autoSaveTimer); isDirty = false;
 }
 
-const ELEMENT_KEYS = ['aero', 'electro', 'spectro', 'fusion', 'glacio', 'havoc'];
+const ELEMENT_KEYS = ['fusion', 'glacio', 'aero', 'spectro', 'havoc', 'electro'];
 const ROWS_CONTAINER = document.getElementById('rows-container');
 
 function buildRows() {
@@ -907,6 +907,8 @@ function buildRows() {
         row.appendChild(body);
 
         ROWS_CONTAINER.appendChild(row);
+
+        applyRowElement(row, key);
     });
 }
 
