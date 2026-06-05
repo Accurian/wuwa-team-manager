@@ -1791,6 +1791,26 @@ function toggleTeamLock(team, forceState = null) {
 }
 
 function deleteTeam(team) {
+    // In matrix mode, return the team to the builder instead of deleting
+    if (document.body.classList.contains('mode-matrix')) {
+        const targetRow = layoutMode === 'rows'
+            ? (team.dataset.element
+                ? ROWS_CONTAINER.querySelector(`.row[data-element="${team.dataset.element}"]`) || ROWS_CONTAINER.firstElementChild
+                : ROWS_CONTAINER.querySelector('.row:not([data-element])') || ROWS_CONTAINER.firstElementChild)
+            : null;
+        if (layoutMode === 'rows' && targetRow) {
+            targetRow.querySelector('.row-body').appendChild(team);
+        } else {
+            workspacePlane.appendChild(team);
+        }
+        team.style.position = '';
+        team.style.left = '';
+        team.style.top = '';
+        updateTeamLayout(team);
+        markDirty();
+        return;
+    }
+
     const unsorted = document.getElementById('zone-unsorted');
     team.querySelectorAll('.unit').forEach(u => {
         unsorted.appendChild(u);
