@@ -627,6 +627,8 @@ body.mode-matrix #matrix-fab-add:hover { background: #fff; transform: scale(1.1)
 
 /* Hide Matrix FAB outside matrix mode */
 body:not(.mode-matrix) #matrix-fab-add { display: none !important; }
+/* Hide lock icon in matrix mode */
+body.mode-matrix .team .lock-indicator { display: none !important; }
 
 /* Roster Basic/Advanced Modes */
 body.roster-basic .roster-advanced { display: none !important; }

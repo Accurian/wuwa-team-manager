@@ -126,12 +126,10 @@ function moveTeamsToMatrix() {
                 resetInlinePositions(team);
             }
         } else {
-            const clone = team.cloneNode(true);
-            clone.querySelectorAll('.unit').forEach(u => {
-                const cb = u.querySelector('.charge-badge');
-                if (cb) cb.style.display = u.dataset.charges === "2" ? 'block' : 'none';
-            });
-            grid.appendChild(clone);
+            team.style.position = '';
+            team.style.left = '';
+            team.style.top = '';
+            grid.appendChild(team);
         }
     });
 }
