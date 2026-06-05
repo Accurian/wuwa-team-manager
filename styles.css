@@ -476,17 +476,17 @@ body.matrix-row-direction-horizontal #matrix-rows {
 
 /* Individual Boss Row (in Matrix view) — mimics team/element row design */
 .matrix-boss-row {
-    border-radius: 8px; border: 1px solid #3a3a45; flex-shrink: 0;
-    display: flex; flex-direction: column; min-height: 90px;
+    border-radius: 8px; border: 1px solid #3a3a45;
+    display: flex; flex-direction: column; min-height: 90px; flex: 1;
     position: relative;
 }
 body.matrix-row-direction-horizontal .matrix-boss-row {
-    width: 270px;
+    width: 270px; flex: none;
 }
 .matrix-boss-row .boss-topbar {
     height: 28px; border-radius: 8px 8px 0 0; position: relative;
     display: flex; justify-content: center; align-items: center;
-    background: rgba(255,255,255,0.04); overflow: hidden;
+    background: rgba(255,255,255,0.04); overflow: hidden; flex-shrink: 0;
 }
 .matrix-boss-row .boss-topbar .topbar-center {
     display: inline-flex; align-items: center; gap: 8px;
@@ -511,19 +511,14 @@ body.matrix-row-direction-horizontal .matrix-boss-row {
 .matrix-boss-row .boss-topbar .boss-delete-btn:hover { background: rgba(120,30,30,0.9); color: #faa; }
 
 .matrix-boss-row .boss-body {
-    min-height: 200px; padding: 8px; border-radius: 0 0 8px 8px;
+    flex: 1; padding: 8px; border-radius: 0 0 8px 8px;
     display: flex; flex-wrap: wrap; gap: 10px; align-content: flex-start;
-    border-top: 1px dashed #3a3a45;
+    border-top: 1px dashed #3a3a45; min-height: 90px;
 }
 .matrix-boss-row .boss-body .team {
     position: relative; flex-shrink: 0; cursor: grab;
 }
 .matrix-boss-row .boss-body .team:active { cursor: grabbing; }
-.matrix-boss-row .boss-body:empty::after {
-    content: 'Drop teams here'; display: block;
-    width: 100%; text-align: center; color: #555; font-size: 12px;
-    padding: 40px 0; pointer-events: none;
-}
 body.matrix-row-direction-horizontal .matrix-boss-row .boss-body {
     flex-direction: column; flex-wrap: nowrap;
 }

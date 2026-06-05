@@ -1787,8 +1787,12 @@ document.getElementById('fab-add').addEventListener('click', () => {
 document.addEventListener('keydown', (e) => {
     if (e.code === 'Space' && e.target.tagName !== 'INPUT' && document.activeElement.tagName !== 'INPUT') {
         e.preventDefault();
-        searchOverlay.style.display = 'flex';
-        searchInput.focus();
+        if (document.body.classList.contains('mode-matrix')) {
+            addMatrixRow();
+        } else {
+            searchOverlay.style.display = 'flex';
+            searchInput.focus();
+        }
     }
     if (e.code === 'Escape') {
         if (searchOverlay.style.display === 'flex') {
