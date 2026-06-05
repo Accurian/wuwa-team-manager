@@ -225,7 +225,7 @@ function initBossList() {
         { file: 'Mech Abomination (Electro).png', name: 'Mech Abomination', resist: ['Electro'] },
         { file: 'Mourning Aix (Spectro).png', name: 'Mourning Aix', resist: ['Spectro'] },
         { file: 'Nameless Explorer (Aero).png', name: 'Nameless Explorer', resist: ['Aero'] },
-        { file: 'Reactor Husk.png', name: 'Reactor Husk', resist: [] },
+        { file: 'Reactor Husk (Fusion).png', name: 'Reactor Husk', resist: ['Fusion'] },
         { file: 'Scar (Havoc, Spectro).png', name: 'Scar', resist: ['Havoc', 'Spectro'] },
         { file: 'Sentry Construct (Aero).png', name: 'Sentry Construct', resist: ['Aero'] },
         { file: 'Sigillum (Spectro).png', name: 'Sigillum', resist: ['Spectro'] },
