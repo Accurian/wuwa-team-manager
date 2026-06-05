@@ -261,6 +261,10 @@ function addMatrixRow() {
 
     row.appendChild(topbar);
 
+    const bossBody = document.createElement('div');
+    bossBody.className = 'boss-body';
+    row.appendChild(bossBody);
+
     let selectedBoss = null;
 
     function showDropdown() {
@@ -695,10 +699,6 @@ function buildRows() {
         topbar.appendChild(label);
 
     row.appendChild(topbar);
-
-    const bossBody = document.createElement('div');
-    bossBody.className = 'boss-body';
-    row.appendChild(bossBody);
 
         let body = document.createElement('div');
         body.className = 'row-body';
