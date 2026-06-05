@@ -26,3 +26,4 @@ Create an account to use the cloud sync feature which allows you to sync up to 1
 You can download and run this site locally, no backend required. Deploy to Vercel, Netlify, GitHub Pages, or any static host. A `vercel.json` is included for Vercel.
 
 > **Disclaimer**: This project was entirely vibe-coded. If you run into issues or have any suggestions, please let me know and I will try my best to fix and add them!
+ 
