@@ -513,7 +513,7 @@ body.matrix-row-direction-horizontal .matrix-boss-row {
 /* Search mode (before boss is selected) */
 .matrix-boss-row .boss-search-wrap {
     position: relative; min-height: 28px; max-width: 280px;
-    display: flex; align-items: center;
+    display: flex; align-items: center; margin: 0 auto;
 }
 .matrix-boss-row .boss-search-input {
     width: 100%; padding: 6px 10px; border-radius: 8px;
@@ -523,10 +523,12 @@ body.matrix-row-direction-horizontal .matrix-boss-row {
 .matrix-boss-row .boss-search-input:focus { border-color: #6a6a7a; }
 
 .matrix-add-row {
-    flex-shrink: 0; margin: 0 10px 10px; padding: 8px 20px; border-radius: 8px;
+    flex-shrink: 0; padding: 8px 20px; border-radius: 8px;
     border: 1px dashed #5a5a6a; background: rgba(255,255,255,0.02);
-    color: #aaa; font-size: 13px; cursor: pointer; display: inline-block;
-    width: auto; align-self: flex-start; transition: 0.2s;
+    color: #aaa; font-size: 13px; cursor: pointer;
+    transition: 0.2s;
+    position: fixed; left: 50%; top: 50%; transform: translate(-50%, -50%);
+    z-index: 50;
 }
 .matrix-add-row:hover { background: rgba(255,255,255,0.06); color: #fff; border-color: #7a7a8a; }
 
