@@ -1375,14 +1375,13 @@ function validateRosterAfterLoad() {
     document.querySelectorAll('.drop-zone .unit').forEach(unit => {
         const name = unit.dataset.name;
         const inTeams = teamCounts[name] || 0;
-        const charges = parseInt(unit.dataset.charges || "1");
+        const isX2 = name.includes('(x2)') || (imageCache[name] && imageCache[name].url && imageCache[name].url.includes('(x2)'));
+        const charges = isX2 ? 2 : parseInt(unit.dataset.charges || "1");
         if (inTeams >= charges) {
             unit.remove();
         } else if (inTeams > 0) {
             unit.dataset.charges = String(charges - inTeams);
-            if (unit.dataset.charges !== "2") {
-                unit.querySelector('.charge-badge').style.display = 'none';
-            }
+            unit.querySelector('.charge-badge').style.display = unit.dataset.charges === "2" ? 'block' : 'none';
         }
     });
     sortAllZones();
