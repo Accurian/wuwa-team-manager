@@ -8,6 +8,7 @@ let currentUser = null;
 let zoomLevel = 1;
 let panX = 0, panY = 0;
 let isDirty = false;
+let autoSaveTimer = null;
 let snapToGrid = false;
 let roverGender = 'male';
 let layoutMode = 'rows';
@@ -38,7 +39,16 @@ const workspaceWrapper = document.getElementById('workspace-wrapper');
 const workspacePlane = document.getElementById('workspace-plane');
 const zoomSlider = document.getElementById('zoom-slider');
 
-function markDirty() { isDirty = true; }
+function markDirty() {
+    isDirty = true;
+    clearTimeout(autoSaveTimer);
+    autoSaveTimer = setTimeout(() => {
+        if (currentUser) {
+            lastSyncTime = Date.now();
+            cloudSave(gatherSaveData());
+        }
+    }, 20000);
+}
 window.addEventListener('beforeunload', (e) => {
     if (isDirty) { e.preventDefault(); e.returnValue = 'Unsaved changes.'; }
 });
@@ -856,7 +866,7 @@ function applySaveData(data) {
     validateRosterAfterLoad();
     loadImagesToUnsorted(document.getElementById('zone-unsorted'));
     applyRoverGender();
-    isDirty = false;
+    clearTimeout(autoSaveTimer); isDirty = false;
 }
 
 const ELEMENT_KEYS = ['aero', 'electro', 'spectro', 'fusion', 'glacio', 'havoc'];
@@ -2042,6 +2052,7 @@ document.getElementById('sidebar-save').addEventListener('click', () => {
     a.click();
     URL.revokeObjectURL(url);
     isDirty = false;
+    clearTimeout(autoSaveTimer);
     closeSidebar();
 
     cloudSave(data);
@@ -2087,12 +2098,3 @@ function showSyncNotification(anchor, text, color = '#2ecc71') {
         setTimeout(() => note.remove(), 300);
     }, 2000);
 }
-
-// Auto-sync interval (every 60s when logged in with changes)
-setInterval(() => {
-    if (isDirty && currentUser) {
-        lastSyncTime = Date.now();
-        cloudSave(gatherSaveData());
-        isDirty = false;
-    }
-}, 60000);
