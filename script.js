@@ -75,6 +75,7 @@ function applyRosterMode(mode) {
     document.body.classList.toggle('roster-basic', mode === 'basic');
     document.body.classList.toggle('roster-advanced', mode === 'advanced');
     document.getElementById('unsorted-title').textContent = mode === 'basic' ? 'ROSTER' : 'UNSORTED';
+    sortAllZones();
 }
 
 document.getElementById('roster-mode-select').addEventListener('change', (e) => {
@@ -1331,23 +1332,36 @@ function createUnitElement(id, displayName, iconUrl, targetNode) {
 function sortAllZones() {
     const unownedZone = document.getElementById('zone-unowned');
     const unsortedZone = document.getElementById('zone-unsorted');
+    const isBasic = document.body.classList.contains('roster-basic');
 
     document.querySelectorAll('.drop-zone').forEach(zone => {
         Array.from(zone.querySelectorAll('div.unit')).forEach(u => {
             const isUnowned = u.dataset.unowned === "true";
-            if (isUnowned && zone !== unownedZone) {
-                unownedZone.appendChild(u);
-            } else if (!isUnowned && zone === unownedZone) {
-                unsortedZone.appendChild(u);
+            if (isBasic) {
+                if (isUnowned && (zone !== unsortedZone)) {
+                    unsortedZone.appendChild(u);
+                }
+            } else {
+                if (isUnowned && zone !== unownedZone) {
+                    unownedZone.appendChild(u);
+                } else if (!isUnowned && zone === unownedZone) {
+                    unsortedZone.appendChild(u);
+                }
             }
         });
     });
 
     [unsortedZone, unownedZone, document.getElementById('zone-main'), document.getElementById('zone-sub'), document.getElementById('zone-support')].forEach(zone => {
         if (!zone) return;
-        Array.from(zone.querySelectorAll('div.unit'))
-            .sort((a, b) => a.dataset.name.localeCompare(b.dataset.name))
-            .forEach(node => zone.appendChild(node));
+        const units = Array.from(zone.querySelectorAll('div.unit'));
+        units.sort((a, b) => {
+            if (isBasic) {
+                const aUnowned = a.dataset.unowned === "true" ? 1 : 0;
+                const bUnowned = b.dataset.unowned === "true" ? 1 : 0;
+                if (aUnowned !== bUnowned) return aUnowned - bUnowned;
+            }
+            return a.dataset.name.localeCompare(b.dataset.name);
+        }).forEach(node => zone.appendChild(node));
     });
 }
 
