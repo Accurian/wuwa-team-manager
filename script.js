@@ -1435,7 +1435,7 @@ searchInput.addEventListener('keydown', (e) => {
 
 function buildTeamFromSearch(query) {
     if (!query.trim()) return;
-    let words = query.toLowerCase().split(/\s+/).slice(0, 3);
+    let words = query.toLowerCase().split(/\s+/).filter(Boolean).slice(0, 3);
     let unitsFound = [];
 
     words.forEach(word => {
