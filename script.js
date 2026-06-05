@@ -231,7 +231,7 @@ function initBossList() {
         { file: 'Sigillum (Spectro).png', name: 'Sigillum', resist: ['Spectro'] },
         { file: 'Tempest Mephis (Electro).png', name: 'Tempest Mephis', resist: ['Electro'] },
         { file: 'The False Sovereign (Electro, Havoc).png', name: 'The False Sovereign', resist: ['Electro', 'Havoc'] },
-        { file: 'Thundering Mephis (Aero, Electro).png', name: 'Thundering Mephis', resist: ['Aero', 'Electro'] },
+        { file: 'Thundering Mephis (Electro).png', name: 'Thundering Mephis', resist: ['Electro'] },
     ];
 }
 initBossList();
