@@ -69,6 +69,33 @@ document.getElementById('roster-mode-select').addEventListener('change', (e) => 
     applyRosterMode(e.target.value);
 });
 
+document.getElementById('reset-btn').addEventListener('click', async () => {
+    const target = document.getElementById('reset-target').value;
+    const unsortedZone = document.getElementById('zone-unsorted');
+
+    document.querySelectorAll('.team').forEach(t => t.remove());
+    document.querySelectorAll('.drop-zone .unit').forEach(u => u.remove());
+
+    if (target === 'cloud' && currentUser) {
+        try {
+            const { data: existing } = await supabaseClient.from('saves').select('id').eq('user_id', currentUser.id).maybeSingle();
+            if (existing) {
+                await supabaseClient.from('saves').delete().eq('id', existing.id);
+            }
+        } catch (err) { console.error('Cloud reset failed:', err); }
+    }
+
+    imageCache = {};
+    fetch('characters.json').then(r => r.json()).then(list => {
+        list.forEach(c => {
+            imageCache[c.key] = { url: c.file, displayName: c.displayName };
+        });
+        applyRoverGender();
+        loadImagesToUnsorted(unsortedZone);
+    });
+    document.getElementById('settings-overlay').style.display = 'none';
+});
+
 function applyRoverGender() {
     const genderKey = roverGender === 'female' ? 'rover(female)' : 'rover(male)';
     const ref = imageCache[genderKey];
