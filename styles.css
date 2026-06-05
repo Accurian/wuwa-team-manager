@@ -166,6 +166,10 @@ body.hide-names .unit-name { display: none; }
     transform: scale(1.1); transition: transform 0.1s;
 }
 
+.drag-placeholder {
+    visibility: hidden; pointer-events: none; flex-shrink: 0;
+}
+
 /* Team Container */
 .team {
     position: absolute; width: 270px; min-height: 90px;

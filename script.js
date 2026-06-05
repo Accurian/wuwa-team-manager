@@ -1391,7 +1391,7 @@ function getPlaneCoords(clientX, clientY) {
 }
 
 // --- Drag, Drop, & Click Logic ---
-let draggingEl = null, originalParent = null, dragType = null;
+let draggingEl = null, originalParent = null, dragType = null, dragPlaceholder = null;
 let dragOffsetX = 0, dragOffsetY = 0;
 let isDragMoved = false, originalRow = null, dragRowsViewX = 0, dragRowsViewY = 0;
 
@@ -1431,9 +1431,14 @@ document.addEventListener('mousedown', (e) => {
         dragOffsetX = e.clientX - rect.left;
         dragOffsetY = e.clientY - rect.top;
 
+        dragPlaceholder = document.createElement('div');
+        dragPlaceholder.className = 'drag-placeholder';
+        dragPlaceholder.style.width = rect.width + 'px';
+        dragPlaceholder.style.height = rect.height + 'px';
+        draggingEl.parentElement.insertBefore(dragPlaceholder, draggingEl);
+
         draggingEl.classList.add('dragging');
         document.body.appendChild(draggingEl);
-        updateTeamLayout(originalParent);
         updateUnitDragPos(e.clientX, e.clientY);
     }
     else if (teamTarget) {
@@ -1492,6 +1497,11 @@ function updateUnitDragPos(x, y) {
 
 document.addEventListener('mouseup', (e) => {
     if (!draggingEl) return;
+
+    if (dragPlaceholder) {
+        dragPlaceholder.remove();
+        dragPlaceholder = null;
+    }
 
     if (!isDragMoved) {
         draggingEl.classList.remove('dragging', 'dragging-team');
