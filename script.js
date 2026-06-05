@@ -401,12 +401,11 @@ function addMatrixRow() {
         if (boss.name === 'Matrix Mimic') {
             if (matrixBaseBosses.length === 0) {
                 const allRows = Array.from(document.querySelectorAll('#matrix-rows > .matrix-boss-row'));
-                allRows.forEach(r => {
+                for (const r of allRows) {
                     const bn = r.dataset.bossName;
-                    if (bn && bn !== 'Matrix Mimic') {
-                        matrixBaseBosses.push(bn);
-                    }
-                });
+                    if (bn === 'Matrix Mimic') break;
+                    if (bn) matrixBaseBosses.push(bn);
+                }
             }
             const container = document.getElementById('matrix-rows');
             matrixBaseBosses.forEach(bn => {
@@ -782,7 +781,7 @@ function applySaveData(data) {
 
     // Restore boss rows for matrix mode
     if (wasMatrix) {
-        matrixBaseBosses = [];
+        matrixBaseBosses = data.matrixBaseBosses || [];
         const container = document.getElementById('matrix-rows');
         data.matrixBosses.forEach(b => {
             const bossData = BOSS_LIST.find(bl => bl.name === b.name);
@@ -1793,6 +1792,7 @@ function toggleTeamLock(team, forceState = null) {
 function deleteTeam(team) {
     // In matrix mode, return the team to the builder instead of deleting
     if (document.body.classList.contains('mode-matrix')) {
+        resetInlinePositions(team);
         const targetRow = layoutMode === 'rows'
             ? (team.dataset.element
                 ? ROWS_CONTAINER.querySelector(`.row[data-element="${team.dataset.element}"]`) || ROWS_CONTAINER.firstElementChild
@@ -1803,9 +1803,6 @@ function deleteTeam(team) {
         } else {
             workspacePlane.appendChild(team);
         }
-        team.style.position = '';
-        team.style.left = '';
-        team.style.top = '';
         updateTeamLayout(team);
         markDirty();
         return;
@@ -1992,7 +1989,7 @@ function buildTeamFromSearch(query) {
 // --- JSON Save ---
 function gatherSaveData() {
     const inMatrix = document.body.classList.contains('mode-matrix');
-    let data = { teams: [], roster: {}, rows: [], hideNames: document.body.classList.contains('hide-names'), snapToGrid, roverGender, layoutMode, rowDirection, rowAlign, matrixRowDirection, rosterMode: document.getElementById('roster-mode-select').value, activeMode: inMatrix ? 'matrix' : 'builder', matrixBosses: [] };
+    let data = { teams: [], roster: {}, rows: [], hideNames: document.body.classList.contains('hide-names'), snapToGrid, roverGender, layoutMode, rowDirection, rowAlign, matrixRowDirection, rosterMode: document.getElementById('roster-mode-select').value, activeMode: inMatrix ? 'matrix' : 'builder', matrixBosses: [], matrixBaseBosses: matrixBaseBosses };
 
     if (inMatrix) {
         const bossRows = document.querySelectorAll('#matrix-rows > .matrix-boss-row');
