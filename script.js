@@ -13,6 +13,7 @@ let roverGender = 'male';
 let layoutMode = 'rows';
 let rowDirection = 'vertical';
 let rowAlign = 'center';
+let matrixRowDirection = 'vertical';
 let imageCache = {};
 let searchSpawnCounter = 0;
 
@@ -159,11 +160,13 @@ document.querySelectorAll('.mode-tab').forEach(tab => {
         }
 
         document.body.classList.toggle('mode-matrix', isMatrix);
+        updateRowSettingsContext();
     });
 });
 
 // --- Endstate Matrix: Boss Rows ---
 const ELEMENT_ICON_PATH = 'Element_Icons/';
+const BOSS_ICON_PATH = 'Boss_Icons/';
 let BOSS_LIST = [];
 
 function initBossList() {
@@ -211,6 +214,7 @@ function addMatrixRow() {
     const row = document.createElement('div');
     row.className = 'matrix-boss-row';
 
+    // Search input mode (before boss selected)
     const searchWrap = document.createElement('div');
     searchWrap.className = 'boss-search-wrap';
     const input = document.createElement('input');
@@ -221,21 +225,31 @@ function addMatrixRow() {
     searchWrap.appendChild(input);
     row.appendChild(searchWrap);
 
+    // Topbar (shown after boss selection — mimics team topbar)
+    const topbar = document.createElement('div');
+    topbar.className = 'boss-topbar';
+    topbar.style.display = 'none';
+
+    const leftBadge = document.createElement('div');
+    leftBadge.className = 'element-badge';
+    topbar.appendChild(leftBadge);
+
     const nameLabel = document.createElement('span');
     nameLabel.className = 'boss-name-label';
-    nameLabel.style.display = 'none';
-    row.appendChild(nameLabel);
+    topbar.appendChild(nameLabel);
 
-    const resistContainer = document.createElement('div');
-    resistContainer.className = 'boss-resistances';
-    row.appendChild(resistContainer);
+    const rightBadge = document.createElement('div');
+    rightBadge.className = 'element-badge right-badge';
+    topbar.appendChild(rightBadge);
 
     const delBtn = document.createElement('button');
     delBtn.className = 'boss-delete-btn';
     delBtn.textContent = '×';
     delBtn.title = 'Remove';
     delBtn.addEventListener('click', () => row.remove());
-    row.appendChild(delBtn);
+    topbar.appendChild(delBtn);
+
+    row.appendChild(topbar);
 
     let selectedBoss = null;
 
@@ -245,7 +259,7 @@ function addMatrixRow() {
         const rect = input.getBoundingClientRect();
         dd.style.left = rect.left + 'px';
         dd.style.top = (rect.bottom + 2) + 'px';
-        dd.style.width = Math.max(200, rect.width) + 'px';
+        dd.style.width = Math.max(240, rect.width) + 'px';
         dd.classList.add('open');
         activeBossInput = input;
 
@@ -254,17 +268,27 @@ function addMatrixRow() {
         filtered.forEach(b => {
             const opt = document.createElement('div');
             opt.className = 'boss-option';
+
+            const bossIcon = document.createElement('div');
+            bossIcon.className = 'option-boss-icon';
+            bossIcon.style.backgroundImage = `url('${BOSS_ICON_PATH}${b.file}')`;
+
             const nameSpan = document.createElement('span');
             nameSpan.textContent = b.name;
+
             const resistSpan = document.createElement('div');
             resistSpan.className = 'option-resist';
             b.resist.forEach(elem => {
                 const dot = document.createElement('div');
                 dot.className = 'mini-resist';
                 const ek = getElementKey(elem);
-                if (ek && ELEMENTS[ek]) dot.style.background = ELEMENTS[ek].color;
+                if (ek && ELEMENTS[ek]) {
+                    dot.style.background = `${ELEMENTS[ek].color} url('${ELEMENT_ICON_PATH}${ELEMENTS[ek].name}.png') no-repeat center / contain`;
+                }
                 resistSpan.appendChild(dot);
             });
+
+            opt.appendChild(bossIcon);
             opt.appendChild(nameSpan);
             opt.appendChild(resistSpan);
             opt.addEventListener('mousedown', (e) => { e.preventDefault(); selectBoss(b); });
@@ -278,33 +302,65 @@ function addMatrixRow() {
         activeBossInput = null;
     }
 
+    function applyRowGradient(resist) {
+        if (resist.length === 0) {
+            topbar.style.background = 'rgba(255,255,255,0.04)';
+        } else if (resist.length === 1) {
+            const ek = getElementKey(resist[0]);
+            if (ek && ELEMENTS[ek]) {
+                topbar.style.background = ELEMENTS[ek].color;
+            }
+        } else {
+            const ek1 = getElementKey(resist[0]);
+            const ek2 = getElementKey(resist[1]);
+            if (ek1 && ELEMENTS[ek1] && ek2 && ELEMENTS[ek2]) {
+                topbar.style.background = `linear-gradient(to right, ${ELEMENTS[ek1].color} 50%, ${ELEMENTS[ek2].color} 50%)`;
+            }
+        }
+    }
+
     function selectBoss(boss) {
         selectedBoss = boss;
-        input.style.display = 'none';
+        searchWrap.style.display = 'none';
+        topbar.style.display = 'flex';
+
         nameLabel.textContent = boss.name;
-        nameLabel.style.display = '';
+
         hideDropdown();
-        resistContainer.innerHTML = '';
-        boss.resist.forEach(elem => {
-            const ek = getElementKey(elem);
+
+        applyRowGradient(boss.resist);
+
+        // Left badge
+        if (boss.resist.length > 0) {
+            const ek = getElementKey(boss.resist[0]);
             if (ek && ELEMENTS[ek]) {
-                const icon = document.createElement('div');
-                icon.className = 'resist-icon';
-                icon.style.backgroundColor = ELEMENTS[ek].color;
-                icon.style.backgroundImage = `url('${ELEMENT_ICON_PATH}${ELEMENTS[ek].name}.png')`;
-                icon.title = elem;
-                resistContainer.appendChild(icon);
+                leftBadge.style.backgroundColor = ELEMENTS[ek].color;
+                leftBadge.style.backgroundImage = `url('${ELEMENT_ICON_PATH}${ELEMENTS[ek].name}.png')`;
             }
-        });
+        } else {
+            leftBadge.style.backgroundColor = '';
+            leftBadge.style.backgroundImage = '';
+        }
+
+        // Right badge (only shown for dual resistance)
+        if (boss.resist.length > 1) {
+            const ek = getElementKey(boss.resist[1]);
+            if (ek && ELEMENTS[ek]) {
+                rightBadge.style.backgroundColor = ELEMENTS[ek].color;
+                rightBadge.style.backgroundImage = `url('${ELEMENT_ICON_PATH}${ELEMENTS[ek].name}.png')`;
+                rightBadge.style.display = '';
+            }
+        } else {
+            rightBadge.style.display = 'none';
+        }
     }
 
     nameLabel.addEventListener('click', () => {
         selectedBoss = null;
-        nameLabel.style.display = 'none';
-        input.style.display = '';
+        topbar.style.display = 'none';
+        searchWrap.style.display = '';
         input.value = '';
-        resistContainer.innerHTML = '';
-        setTimeout(() => { input.focus(); showDropdown(); }, 50);
+        input.focus();
     });
 
     input.addEventListener('focus', () => { if (!selectedBoss) showDropdown(); });
@@ -529,6 +585,7 @@ function applySaveData(data) {
 
     if (data.layoutMode) { layoutMode = data.layoutMode; document.getElementById('layout-mode-select').value = layoutMode; }
     if (data.rowDirection) { applyRowDirection(data.rowDirection); document.getElementById('row-direction-select').value = data.rowDirection; }
+    if (data.matrixRowDirection) { applyMatrixRowDirection(data.matrixRowDirection); }
     if (data.rowAlign) { applyRowAlign(data.rowAlign); document.getElementById('row-align-select').value = data.rowAlign; }
     updateRowSettingsVisibility();
     if (layoutMode === 'rows') {
@@ -734,8 +791,36 @@ function applyRowDirection(dir) {
     document.body.classList.toggle('row-direction-vertical', dir === 'vertical');
 }
 
+function applyMatrixRowDirection(dir) {
+    matrixRowDirection = dir;
+    document.body.classList.remove('matrix-row-direction-vertical', 'matrix-row-direction-horizontal');
+    document.body.classList.add('matrix-row-direction-' + dir);
+}
+
+function updateRowSettingsContext() {
+    const isMatrix = document.body.classList.contains('mode-matrix');
+    const label = document.getElementById('row-direction-label');
+    const alignLabel = document.getElementById('row-align-label');
+    const select = document.getElementById('row-direction-select');
+    const alignSelect = document.getElementById('row-align-select');
+    if (isMatrix) {
+        label.textContent = 'Matrix Row Direction';
+        select.value = matrixRowDirection;
+        alignLabel.textContent = 'Matrix Row Alignment';
+    } else {
+        label.textContent = 'Builder Row Direction';
+        select.value = rowDirection;
+        alignLabel.textContent = 'Builder Row Alignment';
+    }
+}
+
 document.getElementById('row-direction-select').addEventListener('change', (e) => {
-    applyRowDirection(e.target.value);
+    const isMatrix = document.body.classList.contains('mode-matrix');
+    if (isMatrix) {
+        applyMatrixRowDirection(e.target.value);
+    } else {
+        applyRowDirection(e.target.value);
+    }
     markDirty();
 });
 
@@ -746,7 +831,13 @@ function applyRowAlign(align) {
 }
 
 document.getElementById('row-align-select').addEventListener('change', (e) => {
-    applyRowAlign(e.target.value);
+    const val = e.target.value;
+    const isMatrix = document.body.classList.contains('mode-matrix');
+    if (isMatrix) {
+        applyRowAlign(val);
+    } else {
+        applyRowAlign(val);
+    }
     markDirty();
 });
 
@@ -758,6 +849,7 @@ function updateRowSettingsVisibility() {
 }
 document.getElementById('layout-mode-select').addEventListener('change', updateRowSettingsVisibility);
 updateRowSettingsVisibility();
+updateRowSettingsContext();
 
 function toggleBottomRosters() {
     const collapsed = document.getElementById('zone-unsorted-wrapper').classList.toggle('collapsed');
@@ -771,6 +863,7 @@ buildRows();
 if (layoutMode === 'rows') switchLayoutMode('rows');
 applyRowDirection(rowDirection);
 applyRowAlign(rowAlign);
+applyMatrixRowDirection(matrixRowDirection);
 document.body.classList.add('hide-names');
 applyRosterMode('basic');
 checkSession();
@@ -967,6 +1060,7 @@ document.getElementById('json-input').addEventListener('change', (e) => {
 
             if (data.layoutMode) { layoutMode = data.layoutMode; document.getElementById('layout-mode-select').value = layoutMode; }
             if (data.rowDirection) { applyRowDirection(data.rowDirection); document.getElementById('row-direction-select').value = data.rowDirection; }
+            if (data.matrixRowDirection) { applyMatrixRowDirection(data.matrixRowDirection); }
             if (data.rowAlign) { applyRowAlign(data.rowAlign); document.getElementById('row-align-select').value = data.rowAlign; }
             updateRowSettingsVisibility();
             if (layoutMode === 'rows') {
@@ -1726,7 +1820,7 @@ function buildTeamFromSearch(query) {
 
 // --- JSON Save ---
 function gatherSaveData() {
-    let data = { teams: [], roster: {}, rows: [], hideNames: document.body.classList.contains('hide-names'), snapToGrid, roverGender, layoutMode, rowDirection, rowAlign, rosterMode: document.getElementById('roster-mode-select').value };
+    let data = { teams: [], roster: {}, rows: [], hideNames: document.body.classList.contains('hide-names'), snapToGrid, roverGender, layoutMode, rowDirection, rowAlign, matrixRowDirection, rosterMode: document.getElementById('roster-mode-select').value };
 
     document.querySelectorAll('.team').forEach(team => {
         let label = team.querySelector('.team-name-label');
