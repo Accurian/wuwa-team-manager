@@ -369,7 +369,7 @@ function addMatrixRow() {
             rightBadge.style.display = '';
         }
 
-        // Matrix Mimic: duplicate existing boss order twice
+        // Matrix Mimic: duplicate existing boss order once
         if (boss.name === 'Matrix Mimic') {
             const allRows = Array.from(document.querySelectorAll('#matrix-rows > .matrix-boss-row'));
             const existingBosses = [];
@@ -381,15 +381,12 @@ function addMatrixRow() {
             });
             if (existingBosses.length > 0) {
                 const container = document.getElementById('matrix-rows');
-                for (let copy = 0; copy < 2; copy++) {
-                    existingBosses.forEach(bn => {
-                        const bossData = BOSS_LIST.find(b => b.name === bn);
-                        if (bossData) {
-                            const newRow = createBossRowInline(container, bossData);
-                            container.insertBefore(newRow, document.getElementById('matrix-add-row'));
-                        }
-                    });
-                }
+                existingBosses.forEach(bn => {
+                    const bossData = BOSS_LIST.find(b => b.name === bn);
+                    if (bossData) {
+                        createBossRowInline(container, bossData);
+                    }
+                });
             }
         }
     }
@@ -421,7 +418,7 @@ function addMatrixRow() {
     setTimeout(() => input.focus(), 50);
 }
 
-document.getElementById('matrix-add-row').addEventListener('click', addMatrixRow);
+document.getElementById('matrix-fab-add').addEventListener('click', addMatrixRow);
 
 function createBossRowInline(container, boss) {
     const row = document.createElement('div');
@@ -516,7 +513,7 @@ const matrixRows = document.getElementById('matrix-rows');
 matrixRows.addEventListener('mousedown', (e) => {
     if (!document.body.classList.contains('mode-matrix') || !document.body.classList.contains('matrix-row-direction-horizontal')) return;
     if (e.button !== 0) return;
-    const rows = matrixRows.querySelectorAll('.matrix-boss-row, #matrix-add-row');
+    const rows = matrixRows.querySelectorAll('.matrix-boss-row');
     let onRow = false;
     rows.forEach(r => { if (r.contains(e.target)) onRow = true; });
     if (onRow) return;
@@ -1996,9 +1993,16 @@ function buildTeamFromSearch(query) {
 
 // --- JSON Save ---
 function gatherSaveData() {
+    const inMatrix = document.body.classList.contains('mode-matrix');
     let data = { teams: [], roster: {}, rows: [], hideNames: document.body.classList.contains('hide-names'), snapToGrid, roverGender, layoutMode, rowDirection, rowAlign, matrixRowDirection, rosterMode: document.getElementById('roster-mode-select').value };
 
-    document.querySelectorAll('.team').forEach(team => {
+    let teamsSelector;
+    if (inMatrix) {
+        teamsSelector = '#matrix-grid > .team, .matrix-boss-row .boss-body > .team';
+    } else {
+        teamsSelector = '.team';
+    }
+    document.querySelectorAll(teamsSelector).forEach(team => {
         let label = team.querySelector('.team-name-label');
         let rowIdx = -1;
         if (layoutMode === 'rows') {

@@ -467,12 +467,12 @@ body.mode-matrix .matrix-container { display: flex; }
 }
 
 #matrix-rows {
-    flex: 1; min-height: 0; padding: 10px; gap: 8px;
+    flex: 1; min-height: 0; padding: 10px; padding-bottom: 70px; gap: 8px;
     display: flex; flex-direction: column; overflow-y: auto;
 }
 body.matrix-row-direction-horizontal #matrix-rows {
     flex-direction: row; flex-wrap: nowrap; align-content: flex-start;
-    overflow-x: auto; overflow-y: hidden; min-height: 200px;
+    overflow-x: auto; overflow-y: hidden; min-height: 200px; padding-bottom: 10px;
 }
 body.matrix-row-direction-horizontal #matrix-rows::-webkit-scrollbar {
     height: 6px;
@@ -551,19 +551,18 @@ body.matrix-row-direction-horizontal .matrix-boss-row .boss-body {
 }
 .matrix-boss-row .boss-search-input:focus { border-color: #6a6a7a; }
 
-.matrix-add-row {
-    flex-shrink: 0; padding: 8px 20px; border-radius: 8px;
-    border: 1px dashed #5a5a6a; background: rgba(255,255,255,0.02);
-    color: #aaa; font-size: 13px; cursor: pointer;
+/* Matrix FAB — anchored near resizer bar */
+body.mode-matrix #matrix-fab-add {
+    display: flex; position: absolute; bottom: 14px; right: 24px;
+    width: 52px; height: 52px; border-radius: 50%;
+    background: #c7c7c7; color: #1a1a24;
+    border: 2px solid #4a4a5a; cursor: pointer; outline: none;
+    font-size: 30px; font-weight: bold; line-height: 1; padding: 0;
+    justify-content: center; align-items: center;
+    z-index: 60; box-shadow: 0 4px 12px rgba(0,0,0,0.4);
     transition: 0.2s;
-    position: fixed; left: 50%; top: 50%; transform: translate(-50%, -50%);
-    z-index: 50;
 }
-.matrix-add-row:hover { background: rgba(255,255,255,0.06); color: #fff; border-color: #7a7a8a; }
-body.matrix-row-direction-horizontal .matrix-add-row {
-    position: static; transform: none; flex-shrink: 0; align-self: stretch;
-    width: 200px; min-height: 200px; display: flex; align-items: center; justify-content: center;
-}
+body.mode-matrix #matrix-fab-add:hover { background: #fff; transform: scale(1.1); }
 
 /* Boss Search Dropdown */
 .boss-dropdown {
@@ -622,6 +621,9 @@ body.matrix-row-direction-horizontal .matrix-add-row {
     transition: 0.2s;
 }
 .fab-add:hover { background: #fff; transform: scale(1.1); }
+
+/* Hide Matrix FAB outside matrix mode */
+body:not(.mode-matrix) #matrix-fab-add { display: none !important; }
 
 /* Roster Basic/Advanced Modes */
 body.roster-basic .roster-advanced { display: none !important; }
