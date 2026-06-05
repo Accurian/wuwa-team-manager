@@ -1488,43 +1488,43 @@ document.addEventListener('mouseup', (e) => {
         if (originalParent && originalParent.classList.contains('team') && originalParent.querySelectorAll('div.unit').length === 0) {
             originalParent.remove();
         }
-    } else if (dragType === 'team') {
+    } else if (dragType === 'team' && document.body.classList.contains('mode-matrix')) {
         draggingEl.style.position = '';
         draggingEl.style.left = '';
         draggingEl.style.top = '';
         draggingEl.style.zIndex = '';
-        if (document.body.classList.contains('mode-matrix')) {
-            draggingEl.style.display = 'none';
-            let below = document.elementFromPoint(e.clientX, e.clientY);
-            draggingEl.style.display = '';
-            let targetBossRow = below ? below.closest('.matrix-boss-row') : null;
-            if (targetBossRow) {
-                let body = targetBossRow.querySelector('.boss-body');
-                if (body) {
-                    body.appendChild(draggingEl);
-                    resetInlinePositions(draggingEl);
-                }
-            } else {
-                document.getElementById('matrix-grid').appendChild(draggingEl);
-            }
-            markDirty();
-        } else if (layoutMode === 'rows') {
-            draggingEl.style.display = 'none';
-            let below = document.elementFromPoint(e.clientX, e.clientY);
-            draggingEl.style.display = '';
-            let targetRow = below ? below.closest('.row') : null;
-            if (targetRow && targetRow !== originalRow) {
-                targetRow.querySelector('.row-body').appendChild(draggingEl);
+        draggingEl.style.display = 'none';
+        let below = document.elementFromPoint(e.clientX, e.clientY);
+        draggingEl.style.display = '';
+        let targetBossRow = below ? below.closest('.matrix-boss-row') : null;
+        if (targetBossRow) {
+            let body = targetBossRow.querySelector('.boss-body');
+            if (body) {
+                body.appendChild(draggingEl);
                 resetInlinePositions(draggingEl);
-                if (targetRow.dataset.element) {
-                    applyElement(draggingEl, targetRow.dataset.element, null);
-                }
             }
-            markDirty();
         } else {
-            markDirty();
-            enforceAntiVoid();
+            document.getElementById('matrix-grid').appendChild(draggingEl);
         }
+        markDirty();
+    } else if (dragType === 'team' && layoutMode === 'rows') {
+        draggingEl.style.position = '';
+        draggingEl.style.left = '';
+        draggingEl.style.top = '';
+        draggingEl.style.zIndex = '';
+        draggingEl.style.display = 'none';
+        let below = document.elementFromPoint(e.clientX, e.clientY);
+        draggingEl.style.display = '';
+        let targetRow = below ? below.closest('.row') : null;
+        if (targetRow && targetRow !== originalRow) {
+            targetRow.querySelector('.row-body').appendChild(draggingEl);
+            resetInlinePositions(draggingEl);
+            if (targetRow.dataset.element) {
+                applyElement(draggingEl, targetRow.dataset.element, null);
+            }
+        }
+        markDirty();
+    } else if (dragType === 'row') {
         draggingEl.style.position = '';
         draggingEl.style.left = '';
         draggingEl.style.top = '';
