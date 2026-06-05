@@ -491,7 +491,7 @@ body.matrix-row-direction-horizontal #matrix-rows::-webkit-scrollbar-track {
     position: relative; min-width: 290px;
 }
 body.matrix-row-direction-horizontal .matrix-boss-row {
-    width: 290px; flex: none; min-height: 200px;
+    width: 300px; flex: none; min-height: 200px;
 }
 
 .matrix-boss-row .boss-body {
@@ -536,7 +536,7 @@ body.matrix-row-direction-horizontal .matrix-boss-row {
 }
 .matrix-boss-row .boss-body .team:active { cursor: grabbing; }
 body.matrix-row-direction-horizontal .matrix-boss-row .boss-body {
-    flex-direction: column; flex-wrap: nowrap;
+    flex-direction: column; flex-wrap: nowrap; align-items: center;
 }
 
 /* Search mode (before boss is selected) */
