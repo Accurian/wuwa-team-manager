@@ -471,18 +471,27 @@ body.mode-matrix .matrix-container { display: flex; }
     display: flex; flex-direction: column; overflow-y: auto;
 }
 body.matrix-row-direction-horizontal #matrix-rows {
-    flex-direction: row; flex-wrap: wrap; align-content: flex-start;
-    overflow-y: auto; overflow-x: auto;
+    flex-direction: row; flex-wrap: nowrap; align-content: flex-start;
+    overflow-x: auto; overflow-y: hidden; min-height: 200px;
+}
+body.matrix-row-direction-horizontal #matrix-rows::-webkit-scrollbar {
+    height: 6px;
+}
+body.matrix-row-direction-horizontal #matrix-rows::-webkit-scrollbar-thumb {
+    background: #3a3a45; border-radius: 3px;
+}
+body.matrix-row-direction-horizontal #matrix-rows::-webkit-scrollbar-track {
+    background: transparent;
 }
 
 /* Individual Boss Row (in Matrix view) — mimics team/element row design */
 .matrix-boss-row {
     border-radius: 8px; border: 1px solid #3a3a45;
     display: flex; flex-direction: column; flex: 1; min-height: 0;
-    position: relative;
+    position: relative; min-width: 290px;
 }
 body.matrix-row-direction-horizontal .matrix-boss-row {
-    flex: 1; min-width: 270px; min-height: 200px;
+    width: 290px; flex: none; min-height: 200px;
 }
 
 .matrix-boss-row .boss-body {
@@ -551,6 +560,10 @@ body.matrix-row-direction-horizontal .matrix-boss-row .boss-body {
     z-index: 50;
 }
 .matrix-add-row:hover { background: rgba(255,255,255,0.06); color: #fff; border-color: #7a7a8a; }
+body.matrix-row-direction-horizontal .matrix-add-row {
+    position: static; transform: none; flex-shrink: 0; align-self: stretch;
+    width: 200px; min-height: 200px; display: flex; align-items: center; justify-content: center;
+}
 
 /* Boss Search Dropdown */
 .boss-dropdown {

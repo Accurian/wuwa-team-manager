@@ -336,6 +336,7 @@ function addMatrixRow() {
 
     function selectBoss(boss) {
         selectedBoss = boss;
+        row.dataset.bossName = boss.name;
         searchWrap.style.display = 'none';
         topbar.style.display = 'flex';
 
@@ -349,7 +350,6 @@ function addMatrixRow() {
             leftBadge.style.display = 'none';
             rightBadge.style.display = 'none';
         } else {
-            // Left badge — shown only for dual resistance
             if (boss.resist.length > 1) {
                 const ek = getElementKey(boss.resist[0]);
                 if (ek && ELEMENTS[ek]) {
@@ -360,7 +360,6 @@ function addMatrixRow() {
             } else {
                 leftBadge.style.display = 'none';
             }
-            // Right badge — always shown when there is at least one resistance
             const ri = boss.resist.length > 1 ? 1 : 0;
             const ek = getElementKey(boss.resist[ri]);
             if (ek && ELEMENTS[ek]) {
@@ -368,6 +367,30 @@ function addMatrixRow() {
                 rightBadge.style.backgroundImage = `url('${ELEMENT_ICON_PATH}${ELEMENTS[ek].name}.png')`;
             }
             rightBadge.style.display = '';
+        }
+
+        // Matrix Mimic: duplicate existing boss order twice
+        if (boss.name === 'Matrix Mimic') {
+            const allRows = Array.from(document.querySelectorAll('#matrix-rows > .matrix-boss-row'));
+            const existingBosses = [];
+            allRows.forEach(r => {
+                const bn = r.dataset.bossName;
+                if (bn && bn !== 'Matrix Mimic') {
+                    existingBosses.push(bn);
+                }
+            });
+            if (existingBosses.length > 0) {
+                const container = document.getElementById('matrix-rows');
+                for (let copy = 0; copy < 2; copy++) {
+                    existingBosses.forEach(bn => {
+                        const bossData = BOSS_LIST.find(b => b.name === bn);
+                        if (bossData) {
+                            const newRow = createBossRowInline(container, bossData);
+                            container.insertBefore(newRow, document.getElementById('matrix-add-row'));
+                        }
+                    });
+                }
+            }
         }
     }
 
@@ -400,6 +423,84 @@ function addMatrixRow() {
 
 document.getElementById('matrix-add-row').addEventListener('click', addMatrixRow);
 
+function createBossRowInline(container, boss) {
+    const row = document.createElement('div');
+    row.className = 'matrix-boss-row';
+    row.dataset.bossName = boss.name;
+
+    const topbar = document.createElement('div');
+    topbar.className = 'boss-topbar';
+    topbar.style.display = 'flex';
+
+    const centerGroup = document.createElement('div');
+    centerGroup.className = 'topbar-center';
+
+    const leftBadge = document.createElement('div');
+    leftBadge.className = 'element-badge';
+    centerGroup.appendChild(leftBadge);
+
+    const nameLabel = document.createElement('span');
+    nameLabel.className = 'boss-name-label';
+    nameLabel.textContent = boss.name;
+    centerGroup.appendChild(nameLabel);
+
+    const rightBadge = document.createElement('div');
+    rightBadge.className = 'element-badge';
+    centerGroup.appendChild(rightBadge);
+
+    topbar.appendChild(centerGroup);
+
+    const delBtn = document.createElement('button');
+    delBtn.className = 'boss-delete-btn';
+    delBtn.textContent = '×';
+    delBtn.title = 'Remove';
+    delBtn.addEventListener('click', () => row.remove());
+    topbar.appendChild(delBtn);
+    row.appendChild(topbar);
+
+    const bossBody = document.createElement('div');
+    bossBody.className = 'boss-body';
+    row.appendChild(bossBody);
+
+    if (boss.resist.length === 0) {
+        leftBadge.style.display = 'none';
+        rightBadge.style.display = 'none';
+        topbar.style.background = 'rgba(255,255,255,0.04)';
+    } else {
+        if (boss.resist.length > 1) {
+            const ek = getElementKey(boss.resist[0]);
+            if (ek && ELEMENTS[ek]) {
+                leftBadge.style.backgroundColor = ELEMENTS[ek].color;
+                leftBadge.style.backgroundImage = `url('${ELEMENT_ICON_PATH}${ELEMENTS[ek].name}.png')`;
+            }
+            leftBadge.style.display = '';
+        } else {
+            leftBadge.style.display = 'none';
+        }
+        const ri = boss.resist.length > 1 ? 1 : 0;
+        const ek = getElementKey(boss.resist[ri]);
+        if (ek && ELEMENTS[ek]) {
+            rightBadge.style.backgroundColor = ELEMENTS[ek].color;
+            rightBadge.style.backgroundImage = `url('${ELEMENT_ICON_PATH}${ELEMENTS[ek].name}.png')`;
+        }
+        rightBadge.style.display = '';
+
+        if (boss.resist.length === 1) {
+            const ek = getElementKey(boss.resist[0]);
+            if (ek && ELEMENTS[ek]) topbar.style.background = ELEMENTS[ek].color;
+        } else {
+            const ek1 = getElementKey(boss.resist[0]);
+            const ek2 = getElementKey(boss.resist[1]);
+            if (ek1 && ELEMENTS[ek1] && ek2 && ELEMENTS[ek2]) {
+                topbar.style.background = `linear-gradient(to right, ${ELEMENTS[ek1].color} 50%, ${ELEMENTS[ek2].color} 50%)`;
+            }
+        }
+    }
+
+    container.appendChild(row);
+    return row;
+}
+
 document.addEventListener('mousedown', (e) => {
     const dd = document.getElementById('boss-dropdown');
     if (dd.classList.contains('open') && !e.target.closest('.boss-search-wrap') && !e.target.closest('.boss-dropdown')) {
@@ -407,6 +508,38 @@ document.addEventListener('mousedown', (e) => {
         dd.innerHTML = '';
         activeBossInput = null;
     }
+});
+
+// --- Horizontal matrix side-scroll ---
+let matrixScrollDrag = false, matrixScrollStartX = 0, matrixScrollStartScroll = 0;
+const matrixRows = document.getElementById('matrix-rows');
+matrixRows.addEventListener('mousedown', (e) => {
+    if (!document.body.classList.contains('mode-matrix') || !document.body.classList.contains('matrix-row-direction-horizontal')) return;
+    if (e.button !== 0) return;
+    const rows = matrixRows.querySelectorAll('.matrix-boss-row, #matrix-add-row');
+    let onRow = false;
+    rows.forEach(r => { if (r.contains(e.target)) onRow = true; });
+    if (onRow) return;
+    matrixScrollDrag = true;
+    matrixScrollStartX = e.clientX;
+    matrixScrollStartScroll = matrixRows.scrollLeft;
+    matrixRows.style.cursor = 'grabbing';
+    e.preventDefault();
+});
+document.addEventListener('mousemove', (e) => {
+    if (!matrixScrollDrag) return;
+    const dx = e.clientX - matrixScrollStartX;
+    matrixRows.scrollLeft = matrixScrollStartScroll - dx;
+});
+document.addEventListener('mouseup', () => {
+    if (!matrixScrollDrag) return;
+    matrixScrollDrag = false;
+    matrixRows.style.cursor = '';
+});
+matrixRows.addEventListener('mouseleave', () => {
+    if (!matrixScrollDrag) return;
+    matrixScrollDrag = false;
+    matrixRows.style.cursor = '';
 });
 
 // --- Sidebar ---
