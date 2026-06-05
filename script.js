@@ -535,22 +535,29 @@ document.addEventListener('mousedown', (e) => {
 });
 
 // --- Horizontal matrix side-scroll ---
-let matrixScrollDrag = false, matrixScrollStartX = 0, matrixScrollStartScroll = 0;
+let matrixScrollDrag = false, matrixScrollStartX = 0, matrixScrollStartY = 0, matrixScrollStartScroll = 0, matrixScrollDir = 'x';
 const matrixRows = document.getElementById('matrix-rows');
 matrixRows.addEventListener('mousedown', (e) => {
     if (!document.body.classList.contains('mode-matrix')) return;
     if (e.button !== 0) return;
     if (e.target.closest('.team')) return;
     matrixScrollDrag = true;
+    matrixScrollDir = document.body.classList.contains('matrix-row-direction-horizontal') ? 'x' : 'y';
     matrixScrollStartX = e.clientX;
-    matrixScrollStartScroll = matrixRows.scrollLeft;
+    matrixScrollStartY = e.clientY;
+    matrixScrollStartScroll = matrixScrollDir === 'x' ? matrixRows.scrollLeft : matrixRows.scrollTop;
     matrixRows.style.cursor = 'grabbing';
     e.preventDefault();
 });
 document.addEventListener('mousemove', (e) => {
     if (!matrixScrollDrag) return;
-    const dx = e.clientX - matrixScrollStartX;
-    matrixRows.scrollLeft = matrixScrollStartScroll - dx;
+    if (matrixScrollDir === 'x') {
+        const dx = e.clientX - matrixScrollStartX;
+        matrixRows.scrollLeft = matrixScrollStartScroll - dx;
+    } else {
+        const dy = e.clientY - matrixScrollStartY;
+        matrixRows.scrollTop = matrixScrollStartScroll - dy;
+    }
 });
 document.addEventListener('mouseup', () => {
     if (!matrixScrollDrag) return;
