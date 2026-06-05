@@ -423,7 +423,8 @@ body.layout-rows.row-direction-vertical .row-topbar {
     cursor: pointer; z-index: 5; line-height: 1;
     opacity: 0; transition: opacity 0.15s;
 }
-.unit:hover .unit-unowned-btn { opacity: 1; }
+.drop-zone .unit:hover .unit-unowned-btn { opacity: 1; }
+.team .unit-unowned-btn { display: none; }
 .unit.unowned .unit-unowned-btn { opacity: 1; background: #e74c3c; }
 .unit-unowned-btn:hover { background: #7a7a8a; }
 .unit.unowned .unit-unowned-btn:hover { background: #c0392b; }
