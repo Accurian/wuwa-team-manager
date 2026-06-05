@@ -1413,7 +1413,7 @@ function getPlaneCoords(clientX, clientY) {
 // --- Drag, Drop, & Click Logic ---
 let draggingEl = null, originalParent = null, dragType = null, dragPlaceholder = null;
 let dragOffsetX = 0, dragOffsetY = 0;
-let isDragMoved = false, originalRow = null, dragRowsViewX = 0, dragRowsViewY = 0;
+let isDragMoved = false, originalRow = null, dragRowsViewX = 0, dragRowsViewY = 0, dragRowWidth = 0;
 
 document.addEventListener('mousedown', (e) => {
     if (e.button !== 0 || isPanning) return;
@@ -1427,6 +1427,7 @@ document.addEventListener('mousedown', (e) => {
             const rect = draggingEl.getBoundingClientRect();
             dragRowsViewX = e.clientX - rect.left;
             dragRowsViewY = e.clientY - rect.top;
+            dragRowWidth = rect.width;
             isDragMoved = false;
             return;
         }
@@ -1503,6 +1504,7 @@ document.addEventListener('mousemove', (e) => {
         draggingEl.style.top = newY + 'px';
     } else if (dragType === 'row') {
         draggingEl.classList.add('dragging-team');
+        draggingEl.style.width = dragRowWidth + 'px';
         draggingEl.style.position = 'fixed';
         draggingEl.style.left = (e.clientX - dragRowsViewX) + 'px';
         draggingEl.style.top = (e.clientY - dragRowsViewY) + 'px';
