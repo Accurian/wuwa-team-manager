@@ -162,6 +162,177 @@ document.querySelectorAll('.mode-tab').forEach(tab => {
     });
 });
 
+// --- Endstate Matrix: Boss Rows ---
+const ELEMENT_ICON_PATH = 'Element_Icons/';
+let BOSS_LIST = [];
+
+function initBossList() {
+    BOSS_LIST = [
+        { file: 'Bell-Borne Geochelone (Glacio).png', name: 'Bell-Borne Geochelone', resist: ['Glacio'] },
+        { file: 'Crownless (Havoc).png', name: 'Crownless', resist: ['Havoc'] },
+        { file: 'Dragon of Dirge (Fusion).png', name: 'Dragon of Dirge', resist: ['Fusion'] },
+        { file: 'Dreamless (Havoc).png', name: 'Dreamless', resist: ['Havoc'] },
+        { file: 'Fallacy of No Return (Spectro).png', name: 'Fallacy of No Return', resist: ['Spectro'] },
+        { file: 'Feilian Beringal (Aero).png', name: 'Feilian Beringal', resist: ['Aero'] },
+        { file: 'Fleurdelys (Glacio).png', name: 'Fleurdelys', resist: ['Glacio'] },
+        { file: 'Hecate (Havoc).png', name: 'Hecate', resist: ['Havoc'] },
+        { file: 'Hyvatia.png', name: 'Hyvatia', resist: [] },
+        { file: 'Impermanence Heron (Havoc).png', name: 'Impermanence Heron', resist: ['Havoc'] },
+        { file: 'Inferno Rider (Fusion).png', name: 'Inferno Rider', resist: ['Fusion'] },
+        { file: 'Jue (Electro, Spectro).png', name: 'Jue', resist: ['Electro', 'Spectro'] },
+        { file: 'Lady of the Sea (Glacio).png', name: 'Lady of the Sea', resist: ['Glacio'] },
+        { file: 'Lampylumen Myriad (Glacio).png', name: 'Lampylumen Myriad', resist: ['Glacio'] },
+        { file: 'Lioness of Glory (Fusion).png', name: 'Lioness of Glory', resist: ['Fusion'] },
+        { file: 'Lorelei (Glacio).png', name: 'Lorelei', resist: ['Glacio'] },
+        { file: 'Matrix Mimic.png', name: 'Matrix Mimic', resist: [] },
+        { file: 'Mech Abomination (Electro).png', name: 'Mech Abomination', resist: ['Electro'] },
+        { file: 'Mourning Aix (Spectro).png', name: 'Mourning Aix', resist: ['Spectro'] },
+        { file: 'Nameless Explorer (Aero).png', name: 'Nameless Explorer', resist: ['Aero'] },
+        { file: 'Reactor Husk.png', name: 'Reactor Husk', resist: [] },
+        { file: 'Scar (Havoc, Spectro).png', name: 'Scar', resist: ['Havoc', 'Spectro'] },
+        { file: 'Sentry Construct (Aero).png', name: 'Sentry Construct', resist: ['Aero'] },
+        { file: 'Sigillum (Spectro).png', name: 'Sigillum', resist: ['Spectro'] },
+        { file: 'Tempest Mephis (Electro).png', name: 'Tempest Mephis', resist: ['Electro'] },
+        { file: 'The False Sovereign (Electro, Havoc).png', name: 'The False Sovereign', resist: ['Electro', 'Havoc'] },
+        { file: 'Thundering Mephis (Aero, Electro).png', name: 'Thundering Mephis', resist: ['Aero', 'Electro'] },
+    ];
+}
+initBossList();
+
+function getElementKey(elementName) {
+    const map = { Aero: 'aero', Electro: 'electro', Fusion: 'fusion', Glacio: 'glacio', Havoc: 'havoc', Spectro: 'spectro' };
+    return map[elementName] || null;
+}
+
+let activeBossInput = null;
+
+function addMatrixRow() {
+    const container = document.getElementById('matrix-rows');
+    const row = document.createElement('div');
+    row.className = 'matrix-boss-row';
+
+    const searchWrap = document.createElement('div');
+    searchWrap.className = 'boss-search-wrap';
+    const input = document.createElement('input');
+    input.type = 'text';
+    input.className = 'boss-search-input';
+    input.placeholder = 'Search boss...';
+    input.autocomplete = 'off';
+    searchWrap.appendChild(input);
+    row.appendChild(searchWrap);
+
+    const nameLabel = document.createElement('span');
+    nameLabel.className = 'boss-name-label';
+    nameLabel.style.display = 'none';
+    row.appendChild(nameLabel);
+
+    const resistContainer = document.createElement('div');
+    resistContainer.className = 'boss-resistances';
+    row.appendChild(resistContainer);
+
+    const delBtn = document.createElement('button');
+    delBtn.className = 'boss-delete-btn';
+    delBtn.textContent = '×';
+    delBtn.title = 'Remove';
+    delBtn.addEventListener('click', () => row.remove());
+    row.appendChild(delBtn);
+
+    let selectedBoss = null;
+
+    function showDropdown() {
+        const dd = document.getElementById('boss-dropdown');
+        dd.innerHTML = '';
+        const rect = input.getBoundingClientRect();
+        dd.style.left = rect.left + 'px';
+        dd.style.top = (rect.bottom + 2) + 'px';
+        dd.style.width = Math.max(200, rect.width) + 'px';
+        dd.classList.add('open');
+        activeBossInput = input;
+
+        const query = input.value.toLowerCase().trim();
+        const filtered = BOSS_LIST.filter(b => b.name.toLowerCase().includes(query));
+        filtered.forEach(b => {
+            const opt = document.createElement('div');
+            opt.className = 'boss-option';
+            const nameSpan = document.createElement('span');
+            nameSpan.textContent = b.name;
+            const resistSpan = document.createElement('div');
+            resistSpan.className = 'option-resist';
+            b.resist.forEach(elem => {
+                const dot = document.createElement('div');
+                dot.className = 'mini-resist';
+                const ek = getElementKey(elem);
+                if (ek && ELEMENTS[ek]) dot.style.background = ELEMENTS[ek].color;
+                resistSpan.appendChild(dot);
+            });
+            opt.appendChild(nameSpan);
+            opt.appendChild(resistSpan);
+            opt.addEventListener('mousedown', (e) => { e.preventDefault(); selectBoss(b); });
+            dd.appendChild(opt);
+        });
+    }
+
+    function hideDropdown() {
+        document.getElementById('boss-dropdown').classList.remove('open');
+        document.getElementById('boss-dropdown').innerHTML = '';
+        activeBossInput = null;
+    }
+
+    function selectBoss(boss) {
+        selectedBoss = boss;
+        input.style.display = 'none';
+        nameLabel.textContent = boss.name;
+        nameLabel.style.display = '';
+        hideDropdown();
+        resistContainer.innerHTML = '';
+        boss.resist.forEach(elem => {
+            const ek = getElementKey(elem);
+            if (ek && ELEMENTS[ek]) {
+                const icon = document.createElement('div');
+                icon.className = 'resist-icon';
+                icon.style.backgroundColor = ELEMENTS[ek].color;
+                icon.style.backgroundImage = `url('${ELEMENT_ICON_PATH}${ELEMENTS[ek].name}.png')`;
+                icon.title = elem;
+                resistContainer.appendChild(icon);
+            }
+        });
+    }
+
+    nameLabel.addEventListener('click', () => {
+        selectedBoss = null;
+        nameLabel.style.display = 'none';
+        input.style.display = '';
+        input.value = '';
+        resistContainer.innerHTML = '';
+        setTimeout(() => { input.focus(); showDropdown(); }, 50);
+    });
+
+    input.addEventListener('focus', () => { if (!selectedBoss) showDropdown(); });
+    input.addEventListener('input', () => showDropdown());
+    input.addEventListener('keydown', (e) => {
+        if (e.code === 'Escape') hideDropdown();
+        if (e.code === 'Enter') {
+            const dd = document.getElementById('boss-dropdown');
+            const first = dd.querySelector('.boss-option');
+            if (first) first.click();
+        }
+    });
+
+    container.appendChild(row);
+    setTimeout(() => input.focus(), 50);
+}
+
+document.getElementById('matrix-add-row').addEventListener('click', addMatrixRow);
+
+document.addEventListener('mousedown', (e) => {
+    const dd = document.getElementById('boss-dropdown');
+    if (dd.classList.contains('open') && !e.target.closest('.boss-search-wrap') && !e.target.closest('.boss-dropdown')) {
+        dd.classList.remove('open');
+        dd.innerHTML = '';
+        activeBossInput = null;
+    }
+});
+
 // --- Sidebar ---
 function openSidebar() {
     document.getElementById('sidebar').classList.add('open');
