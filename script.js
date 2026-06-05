@@ -1564,11 +1564,10 @@ function showSyncNotification(anchor, text, color = '#2ecc71') {
     const existing = document.querySelector('.sync-notification');
     if (existing) existing.remove();
 
-    const rect = anchor.getBoundingClientRect();
     const note = document.createElement('div');
     note.className = 'sync-notification';
     note.textContent = text;
-    note.style.cssText = `position:fixed;top:${rect.bottom + 6}px;right:${Math.max(10, window.innerWidth - rect.right + 10)}px;background:${color};color:#fff;font-size:12px;padding:4px 10px;border-radius:4px;z-index:9999;opacity:0;transition:opacity 0.3s;pointer-events:none;`;
+    note.style.cssText = `position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:${color};color:#fff;font-size:14px;padding:8px 20px;border-radius:8px;z-index:9999;opacity:0;transition:opacity 0.3s;pointer-events:none;white-space:nowrap;font-weight:bold;box-shadow:0 4px 12px rgba(0,0,0,0.4);`;
     document.body.appendChild(note);
     requestAnimationFrame(() => note.style.opacity = '1');
     setTimeout(() => {
