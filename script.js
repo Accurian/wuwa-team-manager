@@ -1070,17 +1070,7 @@ document.getElementById('layout-mode-select').addEventListener('change', updateR
 updateRowSettingsVisibility();
 updateRowSettingsContext();
 
-function toggleBottomRosters() {
-    document.getElementById('roster-panel').classList.toggle('collapsed');
-}
-document.getElementById('unsorted-title').addEventListener('click', toggleBottomRosters);
-document.getElementById('unowned-title').addEventListener('click', toggleBottomRosters);
-document.getElementById('roster-panel').addEventListener('click', (e) => {
-    if (e.target !== e.currentTarget) return;
-    if (e.currentTarget.classList.contains('collapsed')) {
-        e.currentTarget.classList.remove('collapsed');
-    }
-});
+
 
 buildRows();
 // Apply default settings

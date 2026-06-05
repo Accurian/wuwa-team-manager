@@ -100,15 +100,7 @@ input[type=range][orient=vertical] {
     display: flex; flex-direction: column; background-color: #0f0f14;
     transition: flex 0.2s;
 }
-#roster-panel.collapsed > * { display: none !important; }
-#roster-panel.collapsed { height: 28px !important; overflow: hidden; cursor: pointer; }
-#roster-panel.collapsed::after {
-    content: 'ROSTER'; position: absolute; bottom: 0; left: 0; right: 0;
-    height: 28px; background: #1a1a24; color: #888; font-size: 12px; font-weight: bold;
-    display: flex; align-items: center; justify-content: center; letter-spacing: 1px;
-}
 #zone-unowned-wrapper { border-left: 1px solid #3a3a45; }
-#unsorted-title, #unowned-title { cursor: pointer; }
 
 ::-webkit-scrollbar { width: 8px; height: 8px; }
 ::-webkit-scrollbar-track { background: #121218; }
