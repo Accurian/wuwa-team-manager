@@ -19,7 +19,7 @@ https://wuwa-team-manager.vercel.app/
 
 ## Account Features
 
-- Create an account to use the cloud sync feature which allows you to sync up to 10 custom `.png` icons without having to re-upload them every time! (≤50KB limit per icon)
+Create an account to use the cloud sync feature which allows you to sync up to 10 custom `.png` icons without having to re-upload them every time! (≤50KB limit per icon)
 
 ## Deployment
 
