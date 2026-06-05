@@ -106,6 +106,16 @@ function applyRoverGender() {
     });
 }
 
+// --- Mode Toggle ---
+document.querySelectorAll('.mode-tab').forEach(tab => {
+    tab.addEventListener('click', () => {
+        document.querySelectorAll('.mode-tab').forEach(t => t.classList.remove('active'));
+        tab.classList.add('active');
+        const mode = tab.dataset.mode;
+        document.body.classList.toggle('mode-matrix', mode === 'matrix');
+    });
+});
+
 // --- Sidebar ---
 function openSidebar() {
     document.getElementById('sidebar').classList.add('open');

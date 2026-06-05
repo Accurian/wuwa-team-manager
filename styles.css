@@ -17,6 +17,16 @@ header {
 
 .logo { font-size: 20px; font-weight: bold; letter-spacing: 1px; color: #c7c7c7; }
 
+.mode-tabs {
+    display: flex; gap: 4px; background: #2a2a35; border-radius: 8px; padding: 3px; border: 1px solid #4a4a5a;
+}
+.mode-tab {
+    padding: 5px 14px; border-radius: 6px; cursor: pointer; font-size: 13px; font-weight: bold;
+    color: #888; transition: 0.2s; white-space: nowrap;
+}
+.mode-tab:hover { color: #c7c7c7; }
+.mode-tab.active { background: #3a3a45; color: #e0e0e0; }
+
 /* Workspace & Zooming */
 #workspace-wrapper {
     position: absolute; top: 60px; left: 0; right: 0; bottom: 320px;
@@ -428,6 +438,16 @@ body.layout-rows.row-direction-vertical .row-topbar {
 .unit.unowned .unit-unowned-btn { opacity: 1; background: #e74c3c; }
 .unit-unowned-btn:hover { background: #7a7a8a; }
 .unit.unowned .unit-unowned-btn:hover { background: #c0392b; }
+
+/* Endstate Matrix Mode */
+body.mode-matrix #workspace-wrapper,
+body.mode-matrix #roster-panel,
+body.mode-matrix #fab-add {
+    display: none !important;
+}
+body.mode-matrix {
+    background: #1a1a24;
+}
 
 /* Floating Add Button */
 .fab-add {
