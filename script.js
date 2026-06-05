@@ -126,7 +126,7 @@ function moveTeamsToMatrix() {
     matrixBaseBosses = [];
     const grid = document.getElementById('matrix-grid');
     grid.innerHTML = '';
-    const bossRows = document.querySelectorAll('#matrix-rows > .matrix-boss-row');
+    const bossRows = document.querySelectorAll('#matrix-rows .matrix-boss-row');
     document.querySelectorAll('.team').forEach(team => {
         const br = team.dataset.bossRow;
         const brIdx = br !== '' && br !== undefined ? parseInt(br, 10) : -1;
@@ -151,7 +151,7 @@ function moveTeamsFromMatrix() {
         ...grid.querySelectorAll('.team'),
         ...document.querySelectorAll('.matrix-boss-row .boss-body > .team')
     ];
-    const bossRows = document.querySelectorAll('#matrix-rows > .matrix-boss-row');
+    const bossRows = document.querySelectorAll('#matrix-rows .matrix-boss-row');
     allMatrixTeams.forEach(team => {
         const bossRow = team.closest('.matrix-boss-row');
         if (bossRow) {
@@ -195,8 +195,19 @@ document.querySelectorAll('.mode-tab').forEach(tab => {
 
         document.body.classList.toggle('mode-matrix', isMatrix);
         updateRowSettingsContext();
+        updateAllTeamDeleteIcons();
     });
 });
+
+function updateAllTeamDeleteIcons() {
+    const isMatrix = document.body.classList.contains('mode-matrix');
+    document.querySelectorAll('.team .delete-btn').forEach(btn => {
+        btn.innerHTML = isMatrix
+            ? '<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14"/><path d="m19 12-7 7"/><path d="m5 12 7 7"/></svg>'
+            : '&#10005;';
+        btn.title = isMatrix ? 'Return to grid' : 'Delete team';
+    });
+}
 
 // --- Endstate Matrix: Boss Rows ---
 const ELEMENT_ICON_PATH = 'Element_Icons/';
@@ -213,7 +224,7 @@ function initBossList() {
         { file: 'Feilian Beringal (Aero).png', name: 'Feilian Beringal', resist: ['Aero'] },
         { file: 'Fleurdelys (Glacio).png', name: 'Fleurdelys', resist: ['Glacio'] },
         { file: 'Hecate (Havoc).png', name: 'Hecate', resist: ['Havoc'] },
-        { file: 'Hyvatia.png', name: 'Hyvatia', resist: [] },
+        { file: 'Hyvatia (Spectro).png', name: 'Hyvatia', resist: ['Spectro'] },
         { file: 'Impermanence Heron (Havoc).png', name: 'Impermanence Heron', resist: ['Havoc'] },
         { file: 'Inferno Rider (Fusion).png', name: 'Inferno Rider', resist: ['Fusion'] },
         { file: 'Jue (Electro, Spectro).png', name: 'Jue', resist: ['Electro', 'Spectro'] },
@@ -243,8 +254,39 @@ function getElementKey(elementName) {
 
 let activeBossInput = null;
 
+function getCurrentRound(container) {
+    let rounds = container.querySelectorAll(':scope > .round-group');
+    if (rounds.length === 0 || !rounds[rounds.length - 1].querySelector('.round-bosses').children.length) {
+        // Check if last row in last round is a Matrix Mimic — if so, start new round
+        const lastRound = rounds[rounds.length - 1];
+        const lastBoss = lastRound ? lastRound.querySelector('.round-bosses > .matrix-boss-row:last-child') : null;
+        if (lastBoss && lastBoss.dataset.bossName === 'Matrix Mimic') {
+            return createRound(container);
+        }
+        return rounds[rounds.length - 1] || createRound(container);
+    }
+    return rounds[rounds.length - 1];
+}
+
+function createRound(container) {
+    const group = document.createElement('div');
+    group.className = 'round-group';
+    const label = document.createElement('div');
+    label.className = 'round-label';
+    const rounds = container.querySelectorAll(':scope > .round-group');
+    label.textContent = 'Round ' + (rounds.length + 1);
+    group.appendChild(label);
+    const bosses = document.createElement('div');
+    bosses.className = 'round-bosses';
+    group.appendChild(bosses);
+    container.appendChild(group);
+    return group;
+}
+
 function addMatrixRow() {
     const container = document.getElementById('matrix-rows');
+    const round = getCurrentRound(container);
+    const bosses = round.querySelector('.round-bosses');
     const row = document.createElement('div');
     row.className = 'matrix-boss-row';
 
@@ -285,7 +327,23 @@ function addMatrixRow() {
     delBtn.className = 'boss-delete-btn';
     delBtn.textContent = '×';
     delBtn.title = 'Remove';
-    delBtn.addEventListener('click', () => row.remove());
+    delBtn.addEventListener('click', () => {
+        if (document.body.classList.contains('mode-matrix')) {
+            const grid = document.getElementById('matrix-grid');
+            const body = row.querySelector('.boss-body');
+            if (body) {
+                body.querySelectorAll('.team').forEach(t => {
+                    resetInlinePositions(t);
+                    t.style.position = '';
+                    t.style.left = '';
+                    t.style.top = '';
+                    grid.appendChild(t);
+                    updateTeamLayout(t);
+                });
+            }
+        }
+        row.remove();
+    });
     topbar.appendChild(delBtn);
 
     row.appendChild(topbar);
@@ -398,21 +456,23 @@ function addMatrixRow() {
             rightBadge.style.display = '';
         }
 
-        // Matrix Mimic: duplicate the original base boss order once
+        // Matrix Mimic: duplicate the original base boss order in a new round
         if (boss.name === 'Matrix Mimic') {
             if (matrixBaseBosses.length === 0) {
-                const allRows = Array.from(document.querySelectorAll('#matrix-rows > .matrix-boss-row'));
+                const allRows = Array.from(document.querySelectorAll('#matrix-rows .matrix-boss-row'));
                 for (const r of allRows) {
                     const bn = r.dataset.bossName;
                     if (bn === 'Matrix Mimic') break;
                     if (bn) matrixBaseBosses.push(bn);
                 }
             }
-            const container = document.getElementById('matrix-rows');
+            const mimicContainer = document.getElementById('matrix-rows');
+            const mimicRound = createRound(mimicContainer);
+            const mimicBosses = mimicRound.querySelector('.round-bosses');
             matrixBaseBosses.forEach(bn => {
                 const bossData = BOSS_LIST.find(b => b.name === bn);
                 if (bossData) {
-                    createBossRowInline(container, bossData);
+                    createBossRowInline(mimicBosses, bossData);
                 }
             });
         }
@@ -441,7 +501,7 @@ function addMatrixRow() {
         }
     });
 
-    container.appendChild(row);
+    bosses.appendChild(row);
     setTimeout(() => input.focus(), 50);
 }
 
@@ -451,6 +511,13 @@ function createBossRowInline(container, boss) {
     const row = document.createElement('div');
     row.className = 'matrix-boss-row';
     row.dataset.bossName = boss.name;
+
+    // Determine actual parent — if container is #matrix-rows, wrap in round-group
+    let parentEl = container;
+    if (container.id === 'matrix-rows') {
+        const round = getCurrentRound(container);
+        parentEl = round.querySelector('.round-bosses');
+    }
 
     const topbar = document.createElement('div');
     topbar.className = 'boss-topbar';
@@ -478,7 +545,24 @@ function createBossRowInline(container, boss) {
     delBtn.className = 'boss-delete-btn';
     delBtn.textContent = '×';
     delBtn.title = 'Remove';
-    delBtn.addEventListener('click', () => row.remove());
+    delBtn.addEventListener('click', () => {
+        // Move any teams inside this boss row to the matrix grid
+        if (document.body.classList.contains('mode-matrix')) {
+            const grid = document.getElementById('matrix-grid');
+            const body = row.querySelector('.boss-body');
+            if (body) {
+                body.querySelectorAll('.team').forEach(t => {
+                    resetInlinePositions(t);
+                    t.style.position = '';
+                    t.style.left = '';
+                    t.style.top = '';
+                    grid.appendChild(t);
+                    updateTeamLayout(t);
+                });
+            }
+        }
+        row.remove();
+    });
     topbar.appendChild(delBtn);
     row.appendChild(topbar);
 
@@ -521,7 +605,7 @@ function createBossRowInline(container, boss) {
         }
     }
 
-    container.appendChild(row);
+    parentEl.appendChild(row);
     return row;
 }
 
@@ -741,7 +825,7 @@ async function cloudLoad() {
 function applySaveData(data) {
     document.querySelectorAll('.team').forEach(t => t.remove());
     document.querySelectorAll('.unit').forEach(u => u.remove());
-    document.querySelectorAll('#matrix-rows > .matrix-boss-row').forEach(r => r.remove());
+    document.querySelectorAll('#matrix-rows > .round-group, #matrix-rows > .matrix-boss-row').forEach(r => r.remove());
     document.getElementById('matrix-grid').innerHTML = '';
 
     if (data.customIcons) {
@@ -828,7 +912,7 @@ function applySaveData(data) {
         });
 
         if (wasMatrix) {
-            const bossRows = document.querySelectorAll('#matrix-rows > .matrix-boss-row');
+            const bossRows = document.querySelectorAll('#matrix-rows .matrix-boss-row');
             if (tData.parentBoss !== null && tData.parentBoss !== undefined && tData.parentBoss >= 0 && tData.parentBoss < bossRows.length) {
                 const body = bossRows[tData.parentBoss].querySelector('.boss-body');
                 if (body) body.appendChild(team);
@@ -854,6 +938,7 @@ function applySaveData(data) {
             t.classList.toggle('active', t.dataset.mode === 'matrix');
         });
         updateRowSettingsContext();
+        updateAllTeamDeleteIcons();
     }
 
     if (data.hideNames) document.body.classList.add('hide-names');
@@ -1080,6 +1165,7 @@ applyRowAlign(rowAlign);
 applyMatrixRowDirection(matrixRowDirection);
 document.body.classList.add('hide-names');
 applyRosterMode('basic');
+updateAllTeamDeleteIcons();
 checkSession();
 
 // --- Viewport Panning, Zooming & Anti-Void ---
@@ -1757,10 +1843,33 @@ function createNewTeam(unitNode, clientX, clientY, bypassPositioning = false, ta
     });
     delBtn.addEventListener('click', (e) => {
         e.stopPropagation();
-        deleteTeam(newTeam);
+        if (document.body.classList.contains('mode-matrix')) {
+            // Return team to grid
+            resetInlinePositions(newTeam);
+            newTeam.style.position = '';
+            newTeam.style.left = '';
+            newTeam.style.top = '';
+            document.getElementById('matrix-grid').appendChild(newTeam);
+            updateTeamLayout(newTeam);
+            markDirty();
+        } else {
+            deleteTeam(newTeam);
+        }
     });
     rightGroup.appendChild(delBtn);
     topBar.appendChild(rightGroup);
+
+    // In matrix mode swap × for down-arrow
+    function updateDelBtnIcon() {
+        if (document.body.classList.contains('mode-matrix')) {
+            delBtn.innerHTML = '<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14"/><path d="m19 12-7 7"/><path d="m5 12 7 7"/></svg>';
+            delBtn.title = 'Return to grid';
+        } else {
+            delBtn.innerHTML = '&#10005;';
+            delBtn.title = 'Delete team';
+        }
+    }
+    updateDelBtnIcon();
 
     newTeam.appendChild(topBar);
 
@@ -1816,19 +1925,13 @@ function toggleTeamLock(team, forceState = null) {
 }
 
 function deleteTeam(team) {
-    // In matrix mode, return the team to the builder instead of deleting
+    // In matrix mode, return the team to the matrix grid
     if (document.body.classList.contains('mode-matrix')) {
         resetInlinePositions(team);
-        const targetRow = layoutMode === 'rows'
-            ? (team.dataset.element
-                ? ROWS_CONTAINER.querySelector(`.row[data-element="${team.dataset.element}"]`) || ROWS_CONTAINER.firstElementChild
-                : ROWS_CONTAINER.querySelector('.row:not([data-element])') || ROWS_CONTAINER.firstElementChild)
-            : null;
-        if (layoutMode === 'rows' && targetRow) {
-            targetRow.querySelector('.row-body').appendChild(team);
-        } else {
-            workspacePlane.appendChild(team);
-        }
+        team.style.position = '';
+        team.style.left = '';
+        team.style.top = '';
+        document.getElementById('matrix-grid').appendChild(team);
         updateTeamLayout(team);
         markDirty();
         return;
@@ -2018,7 +2121,7 @@ function gatherSaveData() {
     let data = { teams: [], roster: {}, rows: [], hideNames: document.body.classList.contains('hide-names'), snapToGrid, roverGender, layoutMode, rowDirection, rowAlign, matrixRowDirection, rosterMode: document.getElementById('roster-mode-select').value, activeMode: inMatrix ? 'matrix' : 'builder', matrixBosses: [], matrixBaseBosses: matrixBaseBosses };
 
     if (inMatrix) {
-        const bossRows = document.querySelectorAll('#matrix-rows > .matrix-boss-row');
+        const bossRows = document.querySelectorAll('#matrix-rows .matrix-boss-row');
         bossRows.forEach(row => {
             const bossName = row.dataset.bossName;
             if (bossName) {
@@ -2047,7 +2150,7 @@ function gatherSaveData() {
         if (inMatrix) {
             const bossRow = team.closest('.matrix-boss-row');
             if (bossRow) {
-                const allBossRows = document.querySelectorAll('#matrix-rows > .matrix-boss-row');
+                const allBossRows = document.querySelectorAll('#matrix-rows .matrix-boss-row');
                 parentBoss = Array.from(allBossRows).indexOf(bossRow);
             }
         }
