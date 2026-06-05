@@ -100,7 +100,7 @@ input[type=range][orient=vertical] {
     display: flex; flex-direction: column; background-color: #0f0f14;
     transition: flex 0.2s;
 }
-#zone-unsorted-wrapper.collapsed, #zone-unowned-wrapper.collapsed { overflow: hidden; }
+#zone-unsorted-wrapper.collapsed, #zone-unowned-wrapper.collapsed { overflow: hidden; flex: none; height: 28px; }
 #zone-unowned-wrapper { border-left: 1px solid #3a3a45; }
 #zone-unsorted-wrapper.collapsed .unsorted-zone, #zone-unowned-wrapper.collapsed .unsorted-zone { display: none; height: 0; padding: 0; }
 #unsorted-title, #unowned-title { position: relative; cursor: pointer; }
