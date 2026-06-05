@@ -9,6 +9,8 @@ let zoomLevel = 1;
 let panX = 0, panY = 0;
 let isDirty = false;
 let autoSaveTimer = null;
+let localSaveTimer = null;
+let undoStack = [];
 let snapToGrid = false;
 let roverGender = 'male';
 let layoutMode = 'rows';
@@ -41,6 +43,15 @@ const zoomSlider = document.getElementById('zoom-slider');
 
 function markDirty() {
     isDirty = true;
+    const snapshot = gatherSaveData();
+    undoStack.push(snapshot);
+    if (undoStack.length > 51) undoStack.shift();
+
+    clearTimeout(localSaveTimer);
+    localSaveTimer = setTimeout(() => {
+        localStorage.setItem('wuwa-save', JSON.stringify(snapshot));
+    }, 3000);
+
     clearTimeout(autoSaveTimer);
     autoSaveTimer = setTimeout(() => {
         if (currentUser) {
@@ -48,6 +59,15 @@ function markDirty() {
             cloudSave(gatherSaveData());
         }
     }, 20000);
+}
+
+function undo() {
+    if (undoStack.length < 2) return;
+    undoStack.pop();
+    const previous = undoStack[undoStack.length - 1];
+    applySaveData(previous);
+    isDirty = true;
+    showToast('Undo');
 }
 window.addEventListener('beforeunload', (e) => {
     if (isDirty) { e.preventDefault(); e.returnValue = 'Unsaved changes.'; }
@@ -83,6 +103,7 @@ document.getElementById('roster-mode-select').addEventListener('change', (e) => 
 });
 
 document.getElementById('reset-btn').addEventListener('click', async () => {
+    if (!confirm('Reset all data? This cannot be undone.')) return;
     const target = document.getElementById('reset-target').value;
     const unsortedZone = document.getElementById('zone-unsorted');
 
@@ -99,6 +120,8 @@ document.getElementById('reset-btn').addEventListener('click', async () => {
     }
 
     imageCache = {};
+    undoStack = [];
+    localStorage.removeItem('wuwa-save');
     fetch('characters.json').then(r => r.json()).then(list => {
         list.forEach(c => {
             imageCache[c.key] = { url: c.file, displayName: c.displayName };
@@ -107,6 +130,7 @@ document.getElementById('reset-btn').addEventListener('click', async () => {
         loadImagesToUnsorted(unsortedZone);
     });
     document.getElementById('settings-overlay').style.display = 'none';
+    showToast('Data reset', '#e67e22');
 });
 
 function applyRoverGender() {
@@ -731,7 +755,9 @@ async function cloudLoad() {
         const { data, error } = await supabaseClient.from('saves').select('data').eq('user_id', currentUser.id).maybeSingle();
         if (error) throw error;
         if (data?.data) {
+            undoStack = [];
             applySaveData(data.data);
+            showToast('Cloud save loaded');
         }
     } catch (err) {
         console.error('Cloud load failed:', err);
@@ -870,7 +896,7 @@ function applySaveData(data) {
     validateRosterAfterLoad();
     loadImagesToUnsorted(document.getElementById('zone-unsorted'));
     applyRoverGender();
-    clearTimeout(autoSaveTimer); isDirty = false;
+    clearTimeout(autoSaveTimer); clearTimeout(localSaveTimer); isDirty = false;
 }
 
 const ELEMENT_KEYS = ['fusion', 'glacio', 'aero', 'spectro', 'havoc', 'electro'];
@@ -1082,6 +1108,25 @@ document.body.classList.add('hide-names');
 applyRosterMode('basic');
 checkSession();
 
+// Restore localStorage save if available
+const localSave = localStorage.getItem('wuwa-save');
+if (localSave) {
+    try {
+        const data = JSON.parse(localSave);
+        const teamCount = data.teams ? data.teams.length : 0;
+        const rosterCount = data.roster ? Object.values(data.roster).reduce((s, a) => s + a.length, 0) : 0;
+        if (teamCount > 0 || rosterCount > 0) {
+            setTimeout(() => {
+                if (confirm(`Restore your last session? (${teamCount} teams, ${rosterCount} characters)`)) {
+                    undoStack = [];
+                    applySaveData(data);
+                    showToast('Session restored');
+                }
+            }, 500);
+        }
+    } catch (e) { /* ignore corrupt localStorage */ }
+}
+
 // --- Viewport Panning, Zooming & Anti-Void ---
 function updateTransform(smooth = false) {
     workspacePlane.style.transition = smooth ? 'transform 0.3s ease-out' : 'none';
@@ -1246,9 +1291,11 @@ document.getElementById('json-input').addEventListener('change', (e) => {
     reader.onload = function(event) {
         try {
             const data = JSON.parse(event.target.result);
+            undoStack = [];
             applySaveData(data);
+            showToast('Profile imported', '#2ecc71');
         } catch(err) {
-            alert("Error parsing JSON layout file. Creating unsorted units instead.");
+            showToast('Invalid profile file', '#e74c3c');
             document.querySelectorAll('.team').forEach(t => t.remove());
             document.querySelectorAll('.unit').forEach(u => u.remove());
             loadImagesToUnsorted(document.getElementById('zone-unsorted'));
@@ -1959,6 +2006,13 @@ document.addEventListener('keydown', (e) => {
             document.getElementById('auth-error').style.display = 'none';
             document.getElementById('auth-success').style.display = 'none';
         }
+        if (document.getElementById('settings-overlay').style.display === 'flex') {
+            document.getElementById('settings-overlay').style.display = 'none';
+        }
+    }
+    if ((e.ctrlKey || e.metaKey) && e.code === 'KeyZ') {
+        e.preventDefault();
+        undo();
     }
 });
 
@@ -1976,7 +2030,7 @@ function buildTeamFromSearch(query) {
 
     words.forEach(word => {
         let allUnits = Array.from(document.querySelectorAll('.unit'));
-        let match = allUnits.find(u => u.dataset.name.startsWith(word) && u.parentElement.classList.contains('drop-zone'));
+        let match = allUnits.find(u => u.dataset.name.includes(word) && u.parentElement.classList.contains('drop-zone'));
 
         if (match) {
             let oldParent = match.parentElement;
@@ -2095,11 +2149,28 @@ document.getElementById('sidebar-save').addEventListener('click', () => {
     a.click();
     URL.revokeObjectURL(url);
     isDirty = false;
-    clearTimeout(autoSaveTimer);
+    clearTimeout(autoSaveTimer); clearTimeout(localSaveTimer);
     closeSidebar();
+    showToast('Profile exported');
 
     cloudSave(data);
 });
+
+function showToast(text, color = '#2ecc71') {
+    const existing = document.querySelector('.sync-notification');
+    if (existing) existing.remove();
+
+    const note = document.createElement('div');
+    note.className = 'sync-notification';
+    note.textContent = text;
+    note.style.cssText = `position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:${color};color:#fff;font-size:14px;padding:8px 20px;border-radius:8px;z-index:9999;opacity:0;transition:opacity 0.3s;pointer-events:none;white-space:nowrap;font-weight:bold;box-shadow:0 4px 12px rgba(0,0,0,0.4);`;
+    document.body.appendChild(note);
+    requestAnimationFrame(() => note.style.opacity = '1');
+    setTimeout(() => {
+        note.style.opacity = '0';
+        setTimeout(() => note.remove(), 300);
+    }, 2000);
+}
 
 let lastSyncTime = 0;
 const SYNC_COOLDOWN = 30000;
@@ -2108,9 +2179,18 @@ async function performSync(anchor) {
     const now = Date.now();
     if (now - lastSyncTime < SYNC_COOLDOWN) {
         const remaining = Math.ceil((SYNC_COOLDOWN - (now - lastSyncTime)) / 1000);
-        showSyncNotification(anchor, `Wait ${remaining}s`, '#e67e22');
+        showToast(`Wait ${remaining}s`, '#e67e22');
         return;
     }
+    if (!currentUser) {
+        showToast('Login first', '#e74c3c');
+        return;
+    }
+
+    lastSyncTime = now;
+    await cloudSave(gatherSaveData());
+    showToast('Synced!');
+}
     if (!currentUser) {
         showSyncNotification(anchor, 'Login first', '#e74c3c');
         return;
