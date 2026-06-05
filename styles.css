@@ -10,10 +10,11 @@ body, html {
 header {
     position: absolute; top: 0; left: 0; width: 100%; height: 60px;
     background: #20202b; border-bottom: 2px solid #3a3a45;
-    display: flex; justify-content: space-between; align-items: center;
+    display: flex; justify-content: center; align-items: center;
     padding: 0 20px; box-sizing: border-box; z-index: 100;
     box-shadow: 0 4px 10px rgba(0,0,0,0.5);
 }
+header .menu-btn { position: absolute; right: 20px; }
 
 .logo { font-size: 20px; font-weight: bold; letter-spacing: 1px; color: #c7c7c7; }
 
@@ -455,18 +456,26 @@ body.mode-matrix {
 }
 body.mode-matrix .matrix-container { display: flex; }
 
-.matrix-header {
-    display: flex; justify-content: space-between; align-items: center;
-    padding: 8px 16px; background: #20202b; border-bottom: 1px solid #3a3a45; flex-shrink: 0;
-}
-
-.matrix-grid {
-    flex: 1; padding: 20px; overflow-y: auto;
-    display: flex; flex-wrap: wrap; align-content: flex-start; gap: 16px;
+.matrix-main {
+    flex: 1; overflow: hidden; position: relative;
     background-image:
         linear-gradient(rgba(255,255,255,0.02) 1px, transparent 1px),
         linear-gradient(90deg, rgba(255,255,255,0.02) 1px, transparent 1px);
     background-size: 40px 40px;
+}
+
+.matrix-resizer {
+    height: 6px; width: 100%; background: #3a3a45; cursor: ns-resize;
+    border-top: 1px solid #4a4a5a; border-bottom: 1px solid #1a1a24;
+    transition: background 0.2s; flex-shrink: 0;
+}
+.matrix-resizer:hover { background: #5a5a6a; }
+
+.matrix-grid {
+    height: 320px; flex-shrink: 0;
+    padding: 16px; overflow-y: auto;
+    display: flex; flex-wrap: wrap; align-content: flex-start; gap: 12px;
+    background: #121218;
 }
 
 .matrix-grid .team {

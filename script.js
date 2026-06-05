@@ -674,16 +674,27 @@ function enforceAntiVoid() {
 const resizer = document.getElementById('resizer');
 const rosterPanel = document.getElementById('roster-panel');
 let isResizing = false;
+let isMatrixResizing = false;
 resizer.addEventListener('mousedown', () => { isResizing = true; document.body.style.cursor = 'ns-resize'; });
+document.getElementById('matrix-resizer').addEventListener('mousedown', () => { isMatrixResizing = true; document.body.style.cursor = 'ns-resize'; });
 document.addEventListener('mousemove', (e) => {
-    if (!isResizing) return;
-    let newHeight = window.innerHeight - e.clientY;
-    newHeight = Math.max(160, Math.min(newHeight, window.innerHeight - 100));
-    rosterPanel.style.height = newHeight + 'px';
-    workspaceWrapper.style.bottom = newHeight + 'px';
-    document.getElementById('fab-add').style.bottom = (newHeight + 10) + 'px';
+    if (isResizing) {
+        let newHeight = window.innerHeight - e.clientY;
+        newHeight = Math.max(160, Math.min(newHeight, window.innerHeight - 100));
+        rosterPanel.style.height = newHeight + 'px';
+        workspaceWrapper.style.bottom = newHeight + 'px';
+        document.getElementById('fab-add').style.bottom = (newHeight + 10) + 'px';
+    }
+    if (isMatrixResizing) {
+        let newHeight = window.innerHeight - e.clientY;
+        newHeight = Math.max(160, Math.min(newHeight, window.innerHeight - 100));
+        document.getElementById('matrix-grid').style.height = newHeight + 'px';
+    }
 });
-document.addEventListener('mouseup', () => { if (isResizing) { isResizing = false; document.body.style.cursor = 'default'; } });
+document.addEventListener('mouseup', () => {
+    if (isResizing) { isResizing = false; document.body.style.cursor = 'default'; }
+    if (isMatrixResizing) { isMatrixResizing = false; document.body.style.cursor = 'default'; }
+});
 
 // --- Load Bundled Characters from Manifest ---
 fetch('characters.json').then(r => r.json()).then(list => {
