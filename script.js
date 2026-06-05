@@ -14,6 +14,7 @@ let layoutMode = 'rows';
 let rowDirection = 'vertical';
 let rowAlign = 'center';
 let matrixRowDirection = 'vertical';
+let matrixBaseBosses = []; // base non-Mimic boss order captured on first Mimic
 let imageCache = {};
 let searchSpawnCounter = 0;
 
@@ -111,6 +112,7 @@ function applyRoverGender() {
 const matrixGrid = document.getElementById('matrix-grid');
 
 function moveTeamsToMatrix() {
+    matrixBaseBosses = [];
     const grid = document.getElementById('matrix-grid');
     grid.innerHTML = '';
     document.querySelectorAll('.matrix-boss-row .boss-body').forEach(b => b.innerHTML = '');
@@ -369,25 +371,24 @@ function addMatrixRow() {
             rightBadge.style.display = '';
         }
 
-        // Matrix Mimic: duplicate existing boss order once
+        // Matrix Mimic: duplicate the original base boss order once
         if (boss.name === 'Matrix Mimic') {
-            const allRows = Array.from(document.querySelectorAll('#matrix-rows > .matrix-boss-row'));
-            const existingBosses = [];
-            allRows.forEach(r => {
-                const bn = r.dataset.bossName;
-                if (bn && bn !== 'Matrix Mimic') {
-                    existingBosses.push(bn);
-                }
-            });
-            if (existingBosses.length > 0) {
-                const container = document.getElementById('matrix-rows');
-                existingBosses.forEach(bn => {
-                    const bossData = BOSS_LIST.find(b => b.name === bn);
-                    if (bossData) {
-                        createBossRowInline(container, bossData);
+            if (matrixBaseBosses.length === 0) {
+                const allRows = Array.from(document.querySelectorAll('#matrix-rows > .matrix-boss-row'));
+                allRows.forEach(r => {
+                    const bn = r.dataset.bossName;
+                    if (bn && bn !== 'Matrix Mimic') {
+                        matrixBaseBosses.push(bn);
                     }
                 });
             }
+            const container = document.getElementById('matrix-rows');
+            matrixBaseBosses.forEach(bn => {
+                const bossData = BOSS_LIST.find(b => b.name === bn);
+                if (bossData) {
+                    createBossRowInline(container, bossData);
+                }
+            });
         }
     }
 
