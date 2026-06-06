@@ -1,4 +1,4 @@
-# Endstate Matrix — Wuthering Waves Team Manager
+# Wuthering Waves Team Manager for Endstate Matrix
 
 A team building manager for Wuthering Waves, mainly created for Endstate Matrix but can be used for general use.
 
