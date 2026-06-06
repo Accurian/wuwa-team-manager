@@ -1493,7 +1493,7 @@ function getPlaneCoords(clientX, clientY) {
 // --- Drag, Drop, & Click Logic ---
 let draggingEl = null, originalParent = null, dragType = null, dragPlaceholder = null;
 let dragOffsetX = 0, dragOffsetY = 0;
-let isDragMoved = false, originalRow = null, dragRowsViewX = 0, dragRowsViewY = 0, dragRowWidth = 0;
+let isDragMoved = false, originalRow = null, originalNextSibling = null, dragRowsViewX = 0, dragRowsViewY = 0, dragRowWidth = 0;
 
 document.addEventListener('mousedown', (e) => {
     if (e.button !== 0 || isPanning) return;
@@ -1545,6 +1545,8 @@ document.addEventListener('mousedown', (e) => {
     else if (teamTarget) {
         draggingEl = teamTarget;
         dragType = 'team';
+        originalParent = draggingEl.parentElement;
+        originalNextSibling = draggingEl.nextSibling;
         originalRow = layoutMode === 'rows' ? draggingEl.closest('.row') : null;
         const rect = draggingEl.getBoundingClientRect();
         dragOffsetX = (e.clientX - rect.left) / zoomLevel;
@@ -1552,6 +1554,13 @@ document.addEventListener('mousedown', (e) => {
         if (layoutMode === 'rows') {
             dragRowsViewX = e.clientX - rect.left;
             dragRowsViewY = e.clientY - rect.top;
+        }
+        if (document.body.classList.contains('mode-matrix')) {
+            dragPlaceholder = document.createElement('div');
+            dragPlaceholder.className = 'drag-placeholder';
+            dragPlaceholder.style.width = rect.width + 'px';
+            dragPlaceholder.style.height = rect.height + 'px';
+            draggingEl.parentElement.insertBefore(dragPlaceholder, draggingEl);
         }
     }
 });
@@ -1564,7 +1573,7 @@ document.addEventListener('mousemove', (e) => {
         updateUnitDragPos(e.clientX, e.clientY);
     } else if (dragType === 'team') {
         draggingEl.classList.add('dragging-team');
-        if (layoutMode === 'rows') {
+        if (layoutMode === 'rows' || document.body.classList.contains('mode-matrix')) {
             draggingEl.style.position = 'fixed';
             draggingEl.style.left = (e.clientX - dragRowsViewX) + 'px';
             draggingEl.style.top = (e.clientY - dragRowsViewY) + 'px';
@@ -1632,7 +1641,7 @@ document.addEventListener('mouseup', (e) => {
             resetInlinePositions(originalParent);
             updateTeamLayout(originalParent);
         }
-        draggingEl = null; dragType = null; return;
+        draggingEl = null; dragType = null; originalNextSibling = null; return;
     }
 
     draggingEl.classList.remove('dragging', 'dragging-team');
@@ -1708,6 +1717,10 @@ document.addEventListener('mouseup', (e) => {
             originalParent.remove();
         }
     } else if (dragType === 'team' && document.body.classList.contains('mode-matrix')) {
+        if (dragPlaceholder) {
+            dragPlaceholder.remove();
+            dragPlaceholder = null;
+        }
         draggingEl.style.position = '';
         draggingEl.style.left = '';
         draggingEl.style.top = '';
@@ -1722,6 +1735,13 @@ document.addEventListener('mouseup', (e) => {
                 body.appendChild(draggingEl);
                 resetInlinePositions(draggingEl);
             }
+        } else if (originalParent) {
+            if (originalNextSibling) {
+                originalParent.insertBefore(draggingEl, originalNextSibling);
+            } else {
+                originalParent.appendChild(draggingEl);
+            }
+            resetInlinePositions(draggingEl);
         } else {
             document.getElementById('matrix-grid').appendChild(draggingEl);
         }
@@ -1765,7 +1785,7 @@ document.addEventListener('mouseup', (e) => {
         markDirty();
         enforceAntiVoid();
     }
-    draggingEl = null; dragType = null;
+    draggingEl = null; dragType = null; originalNextSibling = null;
 });
 
 function createNewTeam(unitNode, clientX, clientY, bypassPositioning = false, targetRow = null) {
