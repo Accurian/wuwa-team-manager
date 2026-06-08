@@ -1388,6 +1388,7 @@ function createUnitElement(id, displayName, iconUrl, targetNode) {
         const delBtn = document.createElement('div');
         delBtn.className = 'unit-delete';
         delBtn.textContent = '×';
+        delBtn.addEventListener('mousedown', (e) => e.stopPropagation());
         delBtn.addEventListener('click', (e) => {
             e.stopPropagation();
             unit.remove();
