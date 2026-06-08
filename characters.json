@@ -135,6 +135,11 @@
         "file":  "Character_Icons/Lupa.png"
     },
     {
+        "key":  "lucy",
+        "displayName":  "Lucy",
+        "file":  "Character_Icons/Lucy.png"
+    },
+    {
         "key":  "luuk herssen",
         "displayName":  "Luuk Herssen",
         "file":  "Character_Icons/Luuk Herssen.png"
@@ -173,6 +178,11 @@
         "key":  "roccia",
         "displayName":  "Roccia",
         "file":  "Character_Icons/Roccia.png"
+    },
+    {
+        "key":  "rebecca",
+        "displayName":  "Rebecca",
+        "file":  "Character_Icons/Rebecca.png"
     },
     {
         "key":  "rover(female)",
